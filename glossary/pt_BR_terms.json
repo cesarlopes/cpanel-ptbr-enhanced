@@ -1,0 +1,35 @@
+{
+  "preserve": [
+    "cPanel",
+    "WHM",
+    "DNS",
+    "SPF",
+    "DKIM",
+    "DMARC",
+    "Exim",
+    "Dovecot",
+    "Apache",
+    "PHP",
+    "MySQL",
+    "SSL",
+    "TLS",
+    "SSH",
+    "FTP",
+    "API"
+  ],
+  "translations": {
+    "account": "conta",
+    "backup": "backup",
+    "certificate": "certificado",
+    "domain": "dominio",
+    "email": "email",
+    "feature": "recurso",
+    "file": "arquivo",
+    "hostname": "nome do host",
+    "locale": "locale",
+    "password": "senha",
+    "server": "servidor",
+    "settings": "configuracoes",
+    "user": "usuario"
+  }
+}

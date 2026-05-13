@@ -1,0 +1,157 @@
+"""Apply incremental stub translations to an XLF/XLIFF file.
+
+This script keeps the translation layer deliberately abstract so a real
+provider can be added later without changing the XLF traversal code.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+from abc import ABC, abstractmethod
+from copy import deepcopy
+from pathlib import Path
+from xml.etree import ElementTree as ET
+
+
+class Translator(ABC):
+    @abstractmethod
+    def translate(self, text: str, *, unit_id: str) -> str:
+        """Translate one source string."""
+
+
+class StubTranslator(Translator):
+    """Offline translator used until a real AI/MT provider is integrated."""
+
+    def translate(self, text: str, *, unit_id: str) -> str:
+        if not text:
+            return text
+        return f"[pt_BR stub] {text}"
+
+
+def local_name(tag: str) -> str:
+    return tag.rsplit("}", 1)[-1] if "}" in tag else tag
+
+
+def find_child(unit: ET.Element, child_name: str) -> ET.Element | None:
+    for child in unit:
+        if local_name(child.tag) == child_name:
+            return child
+    return None
+
+
+def replace_child(parent: ET.Element, old_child: ET.Element, new_child: ET.Element) -> None:
+    children = list(parent)
+    index = children.index(old_child)
+    parent.remove(old_child)
+    parent.insert(index, new_child)
+
+
+def text_content(element: ET.Element | None) -> str:
+    if element is None:
+        return ""
+    return "".join(element.itertext()).strip()
+
+
+def copy_source_content_to_target(source: ET.Element | None, target: ET.Element, prefix: str) -> None:
+    """Copy source text and inline tags into target for the offline stub.
+
+    A real translator will eventually need to translate around inline XLF tags.
+    For now, copying the structure keeps validation useful and avoids losing tags.
+    """
+    target.clear()
+    if source is None:
+        return
+
+    target.text = f"{prefix}{source.text or ''}"
+    for child in list(source):
+        target.append(deepcopy(child))
+
+
+def pending_ids_from_json(path: Path | None) -> set[str]:
+    if path is None:
+        return set()
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+    pending: set[str] = set()
+    for section in ("added", "changed"):
+        for item in data.get(section, []):
+            if "id" in item:
+                pending.add(item["id"])
+    return pending
+
+
+def load_existing_targets(path: Path) -> dict[str, ET.Element]:
+    if not path.exists():
+        return {}
+
+    tree = ET.parse(path)
+    targets: dict[str, ET.Element] = {}
+    for unit in tree.getroot().iter():
+        if local_name(unit.tag) != "trans-unit":
+            continue
+        unit_id = unit.attrib.get("id")
+        target = find_child(unit, "target")
+        if unit_id and target is not None and text_content(target):
+            targets[unit_id] = deepcopy(target)
+    return targets
+
+
+def translate_incremental(source_path: Path, base_translation_path: Path, output_path: Path, pending_ids: set[str]) -> int:
+    translator = StubTranslator()
+    existing_targets = load_existing_targets(base_translation_path)
+    tree = ET.parse(source_path)
+    translated_count = 0
+    reused_count = 0
+
+    for unit in tree.getroot().iter():
+        if local_name(unit.tag) != "trans-unit":
+            continue
+
+        unit_id = unit.attrib.get("id")
+        if not unit_id:
+            continue
+
+        source = find_child(unit, "source")
+        target = find_child(unit, "target")
+        if target is None:
+            target = ET.SubElement(unit, "target")
+
+        should_translate = not pending_ids or unit_id in pending_ids
+
+        if not should_translate and unit_id in existing_targets:
+            replace_child(unit, target, deepcopy(existing_targets[unit_id]))
+            reused_count += 1
+            continue
+
+        if should_translate:
+            translated = translator.translate(text_content(source), unit_id=unit_id)
+            if source is not None and list(source):
+                copy_source_content_to_target(source, target, "[pt_BR stub] ")
+            else:
+                target.clear()
+                target.text = translated
+            translated_count += 1
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    tree.write(output_path, encoding="utf-8", xml_declaration=True)
+    print(f"Written: {output_path}")
+    print(f"Stub-translated units: {translated_count}")
+    print(f"Reused existing targets: {reused_count}")
+    return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Create an incremental pt_BR XLF using an offline translation stub.")
+    parser.add_argument("source_xlf", type=Path, help="Current original XLF file.")
+    parser.add_argument("base_translation_xlf", type=Path, help="Existing pt_BR/custom XLF file.")
+    parser.add_argument("--pending-json", type=Path, help="JSON diff generated by compare_locales.py.")
+    parser.add_argument("--output", type=Path, required=True, help="Output XLF path.")
+    args = parser.parse_args()
+
+    pending_ids = pending_ids_from_json(args.pending_json)
+    return translate_incremental(args.source_xlf, args.base_translation_xlf, args.output, pending_ids)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
