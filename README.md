@@ -1,85 +1,184 @@
 # cpanel-ptbr-enhanced
 
-Fluxo versionado e incremental para melhorar a tradução pt_BR do cPanel & WHM a partir do locale original em inglês exportado pelo WHM em formato XLF/XLIFF 1.2.
+Fluxo versionado para melhorar a traducao pt_BR do cPanel & WHM a partir de arquivos XLF/XLIFF 1.2 exportados pelo WHM.
 
-Este projeto não é oficial da cPanel, LLC. Ele é um fluxo customizado para equipes que querem revisar, padronizar e evoluir traduções pt_BR com controle de versão.
+Este projeto nao e oficial da cPanel, LLC. Ele e um fluxo customizado para revisar, padronizar e evoluir traducoes pt_BR com controle de versao.
 
-## Objetivos
+## Objetivo
 
-- Manter o locale original em inglês versionado.
-- Manter a tradução pt_BR customizada versionada.
-- Comparar novas versões do locale original com versões anteriores.
-- Detectar strings novas, removidas ou alteradas.
-- Traduzir apenas o que mudou.
-- Preservar traduções revisadas manualmente.
-- Validar placeholders, tags XML/XLF, entidades HTML e estrutura XLF.
-- Gerar um arquivo final pronto para importação no WHM.
+- Manter o locale original em ingles versionado.
+- Usar o `en.xlf` atual como fonte da verdade.
+- Reaproveitar traducoes existentes de `pt_br.xlf`, `pt_br_2.xlf` e exports customizados.
+- Validar placeholders, tags inline XLF, entidades XML/HTML e estrutura.
+- Preparar um arquivo canonico para a versao atual do WHM.
+- Preparar um arquivo estendido com IDs extras encontrados em outros exports.
+- Permitir revisao/traducao por IA com cache incremental.
 
 ## Requisitos
 
-- Python 3.11 ou superior.
+- Python 3.11+ recomendado.
 - Arquivos `.xlf` ou `.xliff` exportados do WHM.
-- Execução inicial em modo offline, sem dependência de APIs externas.
+- Biblioteca `openai` apenas se for usar traducao via OpenAI.
 
-As implementações atuais usam apenas a biblioteca padrão do Python.
+Instale dependencias opcionais:
+
+```bash
+pip install -r requirements.txt
+```
 
 ## Estrutura
 
 ```text
-cpanel-ptbr-enhanced/
-├── locales/
-│   ├── original/      # Locales originais em inglês exportados do WHM
-│   ├── translated/    # Traduções base ou versões traduzidas anteriores
-│   └── custom/        # Traduções pt_BR customizadas e revisadas
-├── glossary/          # Glossário e padronização de termos
-├── scripts/           # Ferramentas de comparação, tradução, validação e build
-├── cache/             # Arquivos intermediários gerados localmente
-├── output/            # Arquivos finais prontos para importação no WHM
-└── docs/              # Documentação de fluxo
+locales/
+  original/      arquivos originais em ingles exportados do WHM
+  translated/    traducoes pt_BR oficiais/base exportadas do WHM
+  custom/        traducoes pt_BR customizadas/revisadas
+glossary/        termos e frases fixas
+scripts/         ferramentas de comparacao, preparo, validacao e traducao
+cache/           cache local e relatorios temporarios
+output/          arquivos finais gerados
+docs/            documentacao do fluxo
 ```
 
-## Fluxo básico
+## Fluxo recomendado para a primeira versao
 
-1. Exporte o locale original em inglês pelo WHM.
-2. Salve o arquivo em `locales/original/`.
-3. Compare a versão nova com a versão anterior:
+1. Exporte do WHM:
+
+```text
+locales/original/en.xlf
+locales/translated/pt_br.xlf
+locales/translated/pt_br_2.xlf
+```
+
+2. Prepare os arquivos base:
 
 ```bash
-python scripts/compare_locales.py locales/original/old.xlf locales/original/new.xlf --json cache/diff.json
+python scripts/prepare_v1_locale.py
 ```
 
-4. Gere uma tradução incremental usando o stub offline:
+Isso gera:
+
+```text
+output/pt_BR.xlf
+output/pt_BR_extended.xlf
+cache/prepare_v1_report.json
+```
+
+`output/pt_BR.xlf` usa `en.xlf` como fonte da verdade. `output/pt_BR_extended.xlf` adiciona unidades extras validas encontradas nas memorias de traducao.
+
+3. Valide:
 
 ```bash
-python scripts/translate_incremental.py locales/original/new.xlf locales/custom/pt_BR.xlf --pending-json cache/diff.json --output locales/custom/pt_BR.updated.xlf
+python scripts/validate_xlf.py output/pt_BR.xlf
+python scripts/validate_xlf.py output/pt_BR_extended.xlf
 ```
 
-5. Valide placeholders e estrutura:
+4. Configure a chave da OpenAI em `.env`:
+
+```env
+OPENAI_API_KEY=sk-...
+```
+
+5. Teste uma amostra pequena:
 
 ```bash
-python scripts/validate_xlf.py locales/custom/pt_BR.updated.xlf
+python scripts/ai_translate_locale.py --provider openai --model gpt-5.4-mini --mode all --limit 10 --retries 2 --output output/pt_BR.ai.sample10.xlf
 ```
 
-6. Gere o arquivo final:
+6. Valide a amostra:
 
 ```bash
-python scripts/build_locale.py locales/custom/pt_BR.updated.xlf --output output/pt_BR.xlf
+python scripts/validate_xlf.py output/pt_BR.ai.sample10.xlf
 ```
 
-7. Importe o arquivo gerado no WHM.
-8. Recompile/reconstrua a base de locales pelo WHM conforme o procedimento do ambiente.
+7. Rode uma leva maior:
 
-## Glossário
+```bash
+python scripts/ai_translate_locale.py --provider openai --model gpt-5.4-mini --mode all --limit 500 --retries 2 --output output/pt_BR.ai.sample500.xlf
+```
 
-O arquivo `glossary/pt_BR_terms.json` centraliza termos técnicos que devem ser preservados ou traduzidos de forma padronizada.
+8. Quando estiver satisfeito, rode o canonico completo:
 
-Termos como `cPanel`, `WHM`, `DNS`, `SPF`, `DKIM`, `DMARC`, `Exim`, `Dovecot`, `Apache`, `PHP`, `MySQL`, `SSL`, `TLS`, `SSH`, `FTP` e `API` são preservados por padrão quando não fizer sentido traduzi-los.
+```bash
+python scripts/ai_translate_locale.py --provider openai --model gpt-5.4-mini --mode all --retries 2 --output output/pt_BR.ai.full.xlf
+```
 
-## Status
+9. Para traduzir o arquivo estendido:
 
-Base inicial funcional e evolutiva:
+```bash
+python scripts/ai_translate_locale.py --input output/pt_BR_extended.xlf --provider openai --model gpt-5.4-mini --mode all --retries 2 --output output/pt_BR_extended.ai.full.xlf
+```
 
-- Comparação offline de XLF por `trans-unit id`.
-- Validação básica de XML, placeholders e tags inline.
-- Tradução incremental com camada stub para futura integração com OpenAI, Claude, Gemini ou DeepL.
-- Build simples para gerar arquivo final em `output/`.
+O cache em `cache/ai_translations.jsonl` reaproveita traducoes entre o canonico e o extended quando `id`, `source`, modelo e glossario forem iguais.
+
+## Reiniciar a traducao por IA
+
+Se o prompt, glossario ou qualidade desejada mudar bastante, use um cache novo ou remova o cache antigo:
+
+```bash
+del cache\ai_translations.jsonl
+```
+
+No PowerShell:
+
+```powershell
+Remove-Item cache\ai_translations.jsonl
+```
+
+Tambem e possivel manter caches separados:
+
+```bash
+python scripts/ai_translate_locale.py --cache cache/ai_translations_v2.jsonl --provider openai --model gpt-5.4-mini --mode all --limit 100 --output output/pt_BR.ai.v2.sample100.xlf
+```
+
+## Quando o cPanel gerar um novo locale
+
+1. Salve o novo ingles em `locales/original/`, por exemplo:
+
+```text
+locales/original/en_2026-06-01.xlf
+```
+
+2. Compare com a versao anterior:
+
+```bash
+python scripts/compare_locales.py locales/original/en.xlf locales/original/en_2026-06-01.xlf --json cache/diff_2026-06-01.json
+```
+
+3. Se o novo arquivo for a nova base, substitua ou copie para `locales/original/en.xlf`.
+
+4. Rode novamente:
+
+```bash
+python scripts/prepare_v1_locale.py
+```
+
+5. Traduza apenas pendencias:
+
+```bash
+python scripts/ai_translate_locale.py --provider openai --model gpt-5.4-mini --mode pending --retries 2 --output output/pt_BR.ai.incremental.xlf
+```
+
+6. Valide e importe no WHM:
+
+```bash
+python scripts/validate_xlf.py output/pt_BR.ai.incremental.xlf
+```
+
+## Glossario
+
+- `glossary/pt_BR_terms.json`: termos tecnicos e traducoes preferenciais.
+- `glossary/pt_BR_phrases.json`: frases fixas que devem ser traduzidas de forma deterministica antes da IA.
+
+Exemplo importante:
+
+```json
+"(At one quarter past the hour.)": "(Aos 15 minutos de cada hora.)"
+```
+
+## Observacoes
+
+- `cache/` e `output/` sao ignorados pelo Git por padrao.
+- `output/pt_BR.xlf` e `output/pt_BR_extended.xlf` sao artefatos reproduziveis.
+- Nao edite o `source` manualmente; revise sempre o `target`.
+- Preserve placeholders como `[_1]`, `%s`, `%d`, `{name}`, `{{name}}` e `:name`.

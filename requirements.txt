@@ -1,2 +1,5 @@
 # Python 3.11+
-# This project currently uses only the Python standard library.
+# The base workflow uses only the Python standard library.
+
+# Optional: required only for scripts/ai_translate_locale.py --provider openai.
+openai>=2.11.0

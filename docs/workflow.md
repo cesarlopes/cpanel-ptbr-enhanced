@@ -1,91 +1,201 @@
 # Workflow
 
-Este documento descreve o fluxo incremental para manter uma tradução pt_BR customizada do cPanel & WHM a partir do locale original em inglês.
+Este documento descreve o fluxo recomendado para criar e manter uma traducao pt_BR customizada do cPanel & WHM.
 
-## 1. Exportar locale original do WHM
+## Principio central
 
-No WHM, exporte o locale original em inglês em formato XLF/XLIFF 1.2.
-
-Use nomes versionados ou datados para facilitar comparação futura, por exemplo:
+Use sempre o arquivo original em ingles atual como fonte da verdade:
 
 ```text
-locales/original/en_2026-05-13.xlf
+locales/original/en.xlf
 ```
 
-## 2. Salvar em `locales/original/`
+O arquivo final canonico deve seguir a estrutura, ordem, IDs, `source`, tags inline e placeholders desse arquivo. Exports pt_BR existentes sao usados como memorias de traducao, nao como estrutura principal.
 
-Mantenha todos os arquivos originais exportados sem edição manual.
+## Arquivos principais
 
-Isso permite auditar mudanças entre versões do WHM e recriar o fluxo quando necessário.
+```text
+locales/original/en.xlf          base canonica atual
+locales/translated/pt_br.xlf     memoria de traducao 1
+locales/translated/pt_br_2.xlf   memoria de traducao 2
+locales/custom/*.xlf             memorias customizadas opcionais
+output/pt_BR.xlf                 arquivo canonico preparado
+output/pt_BR_extended.xlf        arquivo estendido com IDs extras
+```
 
-## 3. Rodar comparação
+## 1. Exportar locales do WHM
 
-Compare o locale original anterior com o novo:
+No WHM, exporte:
+
+- locale original em ingles;
+- locale pt_BR oficial, se disponivel;
+- locale customizado, se existir.
+
+Salve com nomes claros. Para a base ativa, use:
+
+```text
+locales/original/en.xlf
+```
+
+Para arquivos historicos, use nomes datados:
+
+```text
+locales/original/en_2026-06-01.xlf
+```
+
+## 2. Comparar servidores ou versoes
+
+Para comparar apenas IDs:
+
+```bash
+python scripts/compare_locale_ids.py locales/translated/pt_br.xlf locales/translated/pt_br_2.xlf
+```
+
+Para comparar conteudo por `trans-unit id`:
 
 ```bash
 python scripts/compare_locales.py locales/original/en_old.xlf locales/original/en_new.xlf --json cache/diff.json
 ```
 
-O script compara unidades de tradução por `id` e identifica:
+## 3. Preparar a primeira versao
 
-- Strings novas.
-- Strings removidas.
-- Strings alteradas.
-
-## 4. Traduzir incrementalmente
-
-Use a tradução pt_BR customizada existente como base e aplique apenas as pendências:
+Gere os arquivos preparados:
 
 ```bash
-python scripts/translate_incremental.py locales/original/en_new.xlf locales/custom/pt_BR.xlf --pending-json cache/diff.json --output locales/custom/pt_BR.updated.xlf
+python scripts/prepare_v1_locale.py
 ```
 
-Neste estágio inicial, a tradução é feita por um stub offline. A estrutura do código já separa a camada de tradução para futura integração com OpenAI, Claude, Gemini ou DeepL.
-
-## 5. Validar
-
-Valide o arquivo XLF atualizado:
-
-```bash
-python scripts/validate_xlf.py locales/custom/pt_BR.updated.xlf
-```
-
-A validação verifica:
-
-- XML bem formado.
-- Presença de placeholders do texto original também na tradução.
-- Compatibilidade básica de tags inline em `source` e `target`.
-
-Placeholders preservados:
+Saidas:
 
 ```text
-[_1], [_2], %s, %d, {name}, {{name}}, :name
+output/pt_BR.xlf
+output/pt_BR_extended.xlf
+cache/prepare_v1_report.json
 ```
 
-Entidades HTML como `&amp;`, `&lt;`, `&gt;` e `&quot;` devem permanecer válidas dentro do XML.
+O script:
 
-## 6. Gerar arquivo final em `output/`
+- usa `en.xlf` como estrutura principal;
+- reaproveita traducoes existentes quando sao compativeis;
+- marca pendencias como `state="needs-translation"`;
+- adiciona extras validos ao arquivo extended.
 
-Crie o arquivo final para importação:
+## 4. Validar
 
 ```bash
-python scripts/build_locale.py locales/custom/pt_BR.updated.xlf --output output/pt_BR.xlf
+python scripts/validate_xlf.py output/pt_BR.xlf
+python scripts/validate_xlf.py output/pt_BR_extended.xlf
 ```
 
-O build faz uma validação antes de copiar o arquivo para `output/`.
+A validacao verifica:
 
-## 7. Importar no WHM
+- XML bem formado;
+- placeholders preservados;
+- tags inline XLF preservadas.
 
-Importe o arquivo gerado em `output/pt_BR.xlf` no WHM usando o fluxo de locale do próprio painel.
+## 5. Configurar OpenAI
 
-## 8. Reconstruir a base de locales
+Crie `.env` na raiz do projeto:
 
-Após importar, reconstrua/recompile a base de locales no WHM conforme o procedimento do ambiente.
+```env
+OPENAI_API_KEY=sk-...
+```
 
-Depois de validar manualmente o resultado, versione:
+O `.env` e ignorado pelo Git.
 
-- O novo original em `locales/original/`.
-- A tradução customizada revisada em `locales/custom/`.
-- O diff em `cache/`, se fizer sentido para auditoria local.
+## 6. Traduzir uma amostra
 
-Por padrão, `cache/` e `output/` são ignorados pelo Git, exceto seus arquivos `.gitkeep`.
+Comece pequeno:
+
+```bash
+python scripts/ai_translate_locale.py --provider openai --model gpt-5.4-mini --mode all --limit 10 --retries 2 --output output/pt_BR.ai.sample10.xlf
+```
+
+Valide:
+
+```bash
+python scripts/validate_xlf.py output/pt_BR.ai.sample10.xlf
+```
+
+## 7. Traduzir em lotes
+
+Use limites maiores para revisar qualidade e custo:
+
+```bash
+python scripts/ai_translate_locale.py --provider openai --model gpt-5.4-mini --mode all --limit 500 --retries 2 --output output/pt_BR.ai.sample500.xlf
+```
+
+O script mostra progresso por unidade e usa cache em:
+
+```text
+cache/ai_translations.jsonl
+```
+
+## 8. Traduzir tudo
+
+Canonico:
+
+```bash
+python scripts/ai_translate_locale.py --provider openai --model gpt-5.4-mini --mode all --retries 2 --output output/pt_BR.ai.full.xlf
+```
+
+Extended:
+
+```bash
+python scripts/ai_translate_locale.py --input output/pt_BR_extended.xlf --provider openai --model gpt-5.4-mini --mode all --retries 2 --output output/pt_BR_extended.ai.full.xlf
+```
+
+## 9. Reiniciar a traducao
+
+Se o prompt ou glossario mudar, prefira um cache novo:
+
+```bash
+python scripts/ai_translate_locale.py --cache cache/ai_translations_v2.jsonl --provider openai --model gpt-5.4-mini --mode all --limit 100 --output output/pt_BR.ai.v2.sample100.xlf
+```
+
+Ou remova o cache antigo:
+
+```powershell
+Remove-Item cache\ai_translations.jsonl
+```
+
+## 10. Quando houver nova versao do cPanel
+
+1. Exporte o novo `en.xlf`.
+2. Salve como arquivo datado em `locales/original/`.
+3. Compare com a base anterior:
+
+```bash
+python scripts/compare_locales.py locales/original/en.xlf locales/original/en_2026-06-01.xlf --json cache/diff_2026-06-01.json
+```
+
+4. Promova o novo arquivo para `locales/original/en.xlf`.
+5. Rode:
+
+```bash
+python scripts/prepare_v1_locale.py
+```
+
+6. Traduza pendencias:
+
+```bash
+python scripts/ai_translate_locale.py --provider openai --model gpt-5.4-mini --mode pending --retries 2 --output output/pt_BR.ai.incremental.xlf
+```
+
+7. Valide e importe no WHM.
+
+## 11. Importar no WHM
+
+Use primeiro o arquivo canonico:
+
+```text
+output/pt_BR.ai.full.xlf
+```
+
+O extended deve ser tratado como experimental ate confirmar que o WHM aceita IDs extras sem efeitos colaterais:
+
+```text
+output/pt_BR_extended.ai.full.xlf
+```
+
+Depois de importar, reconstrua/recompile a base de locales no WHM conforme o procedimento do ambiente.
