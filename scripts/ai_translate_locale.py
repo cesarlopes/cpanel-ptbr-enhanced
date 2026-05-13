@@ -55,6 +55,20 @@ class TranslationResult:
     cached: bool = False
 
 
+@dataclass
+class TimingStats:
+    startup: float = 0.0
+    load_cache: float = 0.0
+    load_xml: float = 0.0
+    count_units: float = 0.0
+    api: float = 0.0
+    cache_lookup: float = 0.0
+    build_validate: float = 0.0
+    checkpoint: float = 0.0
+    write_output: float = 0.0
+    report: float = 0.0
+
+
 class Translator(ABC):
     @abstractmethod
     def translate(self, source: str, *, unit_id: str, glossary: dict[str, Any], retry_note: str = "") -> str:
@@ -181,7 +195,23 @@ def expected_token_note(tokenized: TokenizedSource) -> str:
     return (
         "Your previous answer did not preserve all inline tokens. "
         f"You must include these tokens exactly once and in this order: {tokens}. "
-        "Do not omit, rename, duplicate, or translate these tokens."
+        "Do not omit, rename, duplicate, reorder, or translate these tokens. "
+        "Keep the tokens in numeric order even if Portuguese word order would otherwise change."
+    )
+
+
+def quality_retry_note(error: Exception, tokenized: TokenizedSource) -> str:
+    message = str(error)
+    if "inline token mismatch" in message:
+        return expected_token_note(tokenized)
+    if "mojibake" in message:
+        return (
+            "Your previous answer contained mojibake or encoding artifacts such as Ã, Â, â€, or �. "
+            "Return proper UTF-8 Brazilian Portuguese characters, for example: ação, usuário, domínio, não."
+        )
+    return (
+        "Your previous answer failed validation. Preserve all placeholders and inline tokens exactly, "
+        "and return only valid Brazilian Portuguese text."
     )
 
 
@@ -235,6 +265,16 @@ def load_env_file(path: Path) -> None:
         os.environ.setdefault(key, value)
 
 
+def elapsed_since(start: float) -> float:
+    return time.perf_counter() - start
+
+
+def format_seconds(value: float) -> str:
+    if value < 1:
+        return f"{value * 1000:.0f}ms"
+    return f"{value:.2f}s"
+
+
 def source_hash(model: str, source: str, glossary: dict[str, Any]) -> str:
     payload = json.dumps(
         {"model": model, "source": source, "glossary": glossary},
@@ -255,6 +295,10 @@ def load_cache(path: Path) -> dict[tuple[str, str], str]:
         item = json.loads(line)
         cache[(item["id"], item["source_hash"])] = item["translation"]
     return cache
+
+
+def load_fallback_caches(paths: list[Path], model: str) -> list[tuple[Path, str, dict[tuple[str, str], str]]]:
+    return [(path, model, load_cache(path)) for path in paths if path.exists()]
 
 
 def append_cache(path: Path, unit_id: str, hash_value: str, translation: str, model: str) -> None:
@@ -308,11 +352,20 @@ def validate_target(source: ET.Element, target: ET.Element) -> None:
 
 
 def translate_locale(args: argparse.Namespace) -> int:
+    run_started = time.perf_counter()
+    stats = TimingStats()
+
+    startup_started = time.perf_counter()
     ET.register_namespace("", XLIFF_NS)
     ET.register_namespace("cp", CP_NS)
 
     glossary = load_glossary(args.glossary, args.phrases)
+    stats.startup += elapsed_since(startup_started)
+
+    cache_started = time.perf_counter()
     cache = load_cache(args.cache)
+    fallback_caches = load_fallback_caches(args.fallback_cache, args.fallback_model)
+    stats.load_cache += elapsed_since(cache_started)
     translator: Translator
 
     if args.provider == "openai":
@@ -320,12 +373,17 @@ def translate_locale(args: argparse.Namespace) -> int:
     else:
         translator = StubTranslator()
 
+    xml_started = time.perf_counter()
     tree = ET.parse(args.input)
+    stats.load_xml += elapsed_since(xml_started)
+
+    count_started = time.perf_counter()
     total_selected = sum(
         1
         for unit in tree.getroot().iter()
         if local_name(unit.tag) == "trans-unit" and should_translate(unit, args.mode)
     )
+    stats.count_units += elapsed_since(count_started)
     processed = 0
     translated = 0
     cached = 0
@@ -342,6 +400,12 @@ def translate_locale(args: argparse.Namespace) -> int:
             f"selected={total_selected} limit={args.limit or 'none'}",
             flush=True,
         )
+        if fallback_caches:
+            print(
+                "Fallback caches: "
+                + ", ".join(f"{path} as {model}" for path, model, _cache in fallback_caches),
+                flush=True,
+            )
 
     for unit in tree.getroot().iter():
         if local_name(unit.tag) != "trans-unit":
@@ -362,11 +426,27 @@ def translate_locale(args: argparse.Namespace) -> int:
         progress_prefix = f"[{processed}/{total_display}] {unit_id}"
 
         try:
+            unit_started = time.perf_counter()
+            api_elapsed = 0.0
+            build_elapsed = 0.0
+
+            lookup_started = time.perf_counter()
             cache_key = (unit_id, hash_value)
             if cache_key in cache:
                 translated_text = cache[cache_key]
                 cached += 1
                 origin = "cache"
+            elif fallback_hit := next(
+                (
+                    fallback_cache[(unit_id, source_hash(fallback_model, tokenized.text, glossary))]
+                    for _fallback_path, fallback_model, fallback_cache in fallback_caches
+                    if (unit_id, source_hash(fallback_model, tokenized.text, glossary)) in fallback_cache
+                ),
+                None,
+            ):
+                translated_text = fallback_hit
+                cached += 1
+                origin = "fallback-cache"
             elif fixed := fixed_phrase_translation(tokenized.text, glossary):
                 translated_text = fixed
                 origin = "fixed"
@@ -374,26 +454,41 @@ def translate_locale(args: argparse.Namespace) -> int:
                 translated_text = tokenized.text
                 origin = "dry-run"
             else:
+                stats.cache_lookup += elapsed_since(lookup_started)
+                lookup_started = None
                 origin = args.provider
                 if args.progress:
                     print(f"{progress_prefix} sending", flush=True)
+                api_started = time.perf_counter()
                 translated_text = translator.translate(tokenized.text, unit_id=unit_id, glossary=glossary)
+                api_elapsed += elapsed_since(api_started)
                 for _attempt in range(args.retries):
                     try:
-                        build_target_from_translation(tokenized, translated_text)
+                        build_started = time.perf_counter()
+                        retry_target = build_target_from_translation(tokenized, translated_text)
+                        validate_target(source, retry_target)
+                        build_elapsed += elapsed_since(build_started)
                         break
-                    except ValueError:
+                    except ValueError as retry_error:
                         if args.progress:
-                            print(f"{progress_prefix} retrying token preservation", flush=True)
+                            print(f"{progress_prefix} retrying after validation error: {retry_error}", flush=True)
+                        api_started = time.perf_counter()
                         translated_text = translator.translate(
                             tokenized.text,
                             unit_id=unit_id,
                             glossary=glossary,
-                            retry_note=expected_token_note(tokenized),
+                            retry_note=quality_retry_note(retry_error, tokenized),
                         )
+                        api_elapsed += elapsed_since(api_started)
+                stats.api += api_elapsed
+            if lookup_started is not None:
+                stats.cache_lookup += elapsed_since(lookup_started)
 
+            build_started = time.perf_counter()
             target = build_target_from_translation(tokenized, translated_text)
             validate_target(source, target)
+            build_elapsed += elapsed_since(build_started)
+            stats.build_validate += build_elapsed
             if cache_key not in cache and not args.dry_run:
                 append_cache(args.cache, unit_id, hash_value, translated_text, args.model)
             target.set("state", "translated" if args.provider != "stub" and not args.dry_run else "needs-review")
@@ -402,9 +497,13 @@ def translate_locale(args: argparse.Namespace) -> int:
             translated += 1
 
             if args.progress:
+                unit_elapsed = elapsed_since(unit_started)
                 print(
                     f"{progress_prefix} ok origin={origin} translated={translated} "
-                    f"cache_hits={cached} failed={len(failed)}",
+                    f"cache_hits={cached} failed={len(failed)} "
+                    f"api={format_seconds(api_elapsed) if api_elapsed else '-'} "
+                    f"build={format_seconds(build_elapsed)} unit={format_seconds(unit_elapsed)} "
+                    f"total={format_seconds(elapsed_since(run_started))}",
                     flush=True,
                 )
 
@@ -421,14 +520,20 @@ def translate_locale(args: argparse.Namespace) -> int:
             and processed % args.checkpoint_every == 0
         ):
             partial_path = checkpoint_path(args.output)
+            checkpoint_started = time.perf_counter()
             write_tree(partial_path, tree)
+            checkpoint_elapsed = elapsed_since(checkpoint_started)
+            stats.checkpoint += checkpoint_elapsed
             if args.progress:
-                print(f"Checkpoint written: {partial_path}", flush=True)
+                print(f"Checkpoint written: {partial_path} in {format_seconds(checkpoint_elapsed)}", flush=True)
 
     if not args.dry_run:
+        write_started = time.perf_counter()
         write_tree(args.output, tree)
+        stats.write_output += elapsed_since(write_started)
 
     if args.report:
+        report_started = time.perf_counter()
         args.report.parent.mkdir(parents=True, exist_ok=True)
         args.report.write_text(
             json.dumps(
@@ -443,17 +548,43 @@ def translate_locale(args: argparse.Namespace) -> int:
                     "translated": translated,
                     "cached": cached,
                     "failed": failed,
+                    "timings_seconds": {
+                        "startup": stats.startup,
+                        "load_cache": stats.load_cache,
+                        "load_xml": stats.load_xml,
+                        "count_units": stats.count_units,
+                        "api": stats.api,
+                        "cache_lookup": stats.cache_lookup,
+                        "build_validate": stats.build_validate,
+                        "checkpoint": stats.checkpoint,
+                        "write_output": stats.write_output,
+                        "report": stats.report,
+                        "total": elapsed_since(run_started),
+                    },
                 },
                 ensure_ascii=False,
                 indent=2,
             ),
             encoding="utf-8",
         )
+        stats.report += elapsed_since(report_started)
 
     print(f"Processed: {processed}")
     print(f"Translated/prepared: {translated}")
     print(f"Cache hits: {cached}")
     print(f"Failed: {len(failed)}")
+    print("Timings:")
+    print(f"- startup: {format_seconds(stats.startup)}")
+    print(f"- load cache: {format_seconds(stats.load_cache)}")
+    print(f"- load XML: {format_seconds(stats.load_xml)}")
+    print(f"- count units: {format_seconds(stats.count_units)}")
+    print(f"- API calls: {format_seconds(stats.api)}")
+    print(f"- cache lookup: {format_seconds(stats.cache_lookup)}")
+    print(f"- build/validate: {format_seconds(stats.build_validate)}")
+    print(f"- checkpoint writes: {format_seconds(stats.checkpoint)}")
+    print(f"- final write: {format_seconds(stats.write_output)}")
+    print(f"- report write: {format_seconds(stats.report)}")
+    print(f"- total: {format_seconds(elapsed_since(run_started))}")
     if args.dry_run:
         print("Dry run only: no output file was written.")
     else:
@@ -470,6 +601,18 @@ def main() -> int:
     parser.add_argument("--glossary", type=Path, default=Path("glossary/pt_BR_terms.json"))
     parser.add_argument("--phrases", type=Path, default=Path("glossary/pt_BR_phrases.json"))
     parser.add_argument("--cache", type=Path, default=Path("cache/ai_translations.jsonl"))
+    parser.add_argument(
+        "--fallback-cache",
+        type=Path,
+        nargs="*",
+        default=[],
+        help="Optional cache files to reuse before calling the selected model.",
+    )
+    parser.add_argument(
+        "--fallback-model",
+        default="gpt-5.4-mini",
+        help="Model name originally used to create entries in --fallback-cache.",
+    )
     parser.add_argument("--report", type=Path, default=Path("cache/ai_translate_report.json"))
     parser.add_argument("--env-file", type=Path, default=Path(".env"))
     parser.add_argument("--provider", choices=("stub", "openai"), default="stub")
