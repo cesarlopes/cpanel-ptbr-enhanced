@@ -131,6 +131,18 @@ O script mostra progresso por unidade e usa cache em:
 cache/ai_translations.jsonl
 ```
 
+### Opcao paralela com SQLite
+
+Para lotes grandes, use `ai_translate_locale_sqlite.py`. Ele trabalha com cache SQLite, checkpoints e chamadas paralelas.
+
+Exemplo usando xAI/Grok para continuar a traducao, mas reaproveitando primeiro as traducoes ja feitas com `gpt-5-mini` no mesmo banco:
+
+```bash
+python scripts/ai_translate_locale_sqlite.py --cache-db cache/translations.sqlite --provider xai --model grok-4-1-fast-non-reasoning --fallback-model gpt-5-mini --mode all --limit 15000 --retries 2 --checkpoint-every 250 --concurrency 3 --output output/pt_BR.grok.fast.sample15000.xlf
+```
+
+Com `--fallback-model`, o script consulta outro modelo no mesmo SQLite antes de chamar a API do provedor atual.
+
 ## 8. Traduzir tudo
 
 Canonico:

@@ -163,11 +163,20 @@ class SQLiteCache:
 class OpenAITranslator:
     _local = threading.local()
 
-    def __init__(self, model: str) -> None:
+    def __init__(self, model: str, provider: str = "openai") -> None:
         self.model = model
-        self.api_key = os.environ.get("OPENAI_API_KEY")
+        self.provider = provider
+        if provider == "xai":
+            self.api_key = os.environ.get("XAI_API_KEY")
+            self.base_url = "https://api.x.ai/v1"
+            env_name = "XAI_API_KEY"
+        else:
+            self.api_key = os.environ.get("OPENAI_API_KEY")
+            self.base_url = None
+            env_name = "OPENAI_API_KEY"
+
         if not self.api_key:
-            raise RuntimeError("OPENAI_API_KEY is not set. Add it to .env or export it in your shell.")
+            raise RuntimeError(f"{env_name} is not set. Add it to .env or export it in your shell.")
 
     def client(self) -> Any:
         if not hasattr(self._local, "client"):
@@ -175,7 +184,10 @@ class OpenAITranslator:
                 from openai import OpenAI
             except ImportError as exc:
                 raise RuntimeError("Install the OpenAI SDK first: pip install openai") from exc
-            self._local.client = OpenAI(api_key=self.api_key)
+            if self.base_url:
+                self._local.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+            else:
+                self._local.client = OpenAI(api_key=self.api_key)
         return self._local.client
 
     def translate(self, source: str, *, unit_id: str, glossary: dict[str, Any], retry_note: str = "") -> str:
@@ -185,6 +197,8 @@ class OpenAITranslator:
         instructions = (
             "You are revising cPanel & WHM XLIFF UI localization from English to Brazilian Portuguese. "
             "Use Brazilian Portuguese suitable for a technical hosting control panel. "
+            "Use correct Brazilian Portuguese spelling with accents and diacritics; do not omit accents in words such as domínio, domínios, usuário, usuários, configuração, configurações, opção, opções, informação, informações, ação, ações, permissão, permissões, autenticação, não. "
+            "Prefer natural Brazilian Portuguese UI wording; avoid awkward literal phrasing. "
             "Prefer clear UI language over literal translation. "
             "cPanel & WHM includes cron jobs, email accounts, DNS, SSL/TLS, FTP, SSH, databases, backups, packages, domains, and server administration. "
             "Short fragments may be labels, dropdown options, validation messages, or cron schedule descriptions. "
@@ -409,6 +423,7 @@ def translate_one(
     glossary: dict[str, Any],
     model: str,
     retries: int,
+    origin: str,
 ) -> WorkResult:
     started = time.perf_counter()
     attempts = 0
@@ -434,7 +449,7 @@ def translate_one(
         return WorkResult(
             item=item,
             translation=translated_text,
-            origin="openai",
+            origin=origin,
             ok=True,
             api_seconds=time.perf_counter() - started,
             attempts=attempts,
@@ -443,7 +458,7 @@ def translate_one(
         return WorkResult(
             item=item,
             translation=None,
-            origin="openai",
+            origin=origin,
             ok=False,
             error=str(exc),
             api_seconds=time.perf_counter() - started,
@@ -459,7 +474,7 @@ def apply_result(result: WorkResult, args: argparse.Namespace, cache_db: SQLiteC
     target.set("state", "translated" if args.provider != "stub" and not args.dry_run else "needs-review")
     target.set(f"{{{CP_NS}}}translated-by", result.origin)
     replace_or_insert_target(result.item.unit, target)
-    if result.origin == "openai":
+    if result.origin in ("openai", "xai"):
         cache_db.put_ok(
             result.item.unit_id,
             result.item.source_hash,
@@ -477,10 +492,12 @@ def translate_locale(args: argparse.Namespace) -> int:
     glossary = load_glossary(args.glossary, args.phrases)
     cache_db = SQLiteCache(args.cache_db)
     fallback_dbs = [(path, SQLiteCache(path)) for path in args.fallback_cache_db if path.exists()]
+    if args.fallback_cache_db and not args.fallback_model:
+        raise ValueError("--fallback-model is required when using --fallback-cache-db")
 
     tree = ET.parse(args.input)
     items = collect_work_items(tree, args, glossary)
-    translator = OpenAITranslator(args.model) if args.provider == "openai" else None
+    translator = OpenAITranslator(args.model, args.provider) if args.provider in ("openai", "xai") else None
 
     processed = 0
     translated = 0
@@ -498,7 +515,13 @@ def translate_locale(args: argparse.Namespace) -> int:
     for item in items:
         cached_translation = cache_db.get(item.unit_id, item.source_hash, args.model)
         origin = "cache"
-        if cached_translation is None:
+        if cached_translation is None and args.fallback_model and args.fallback_model != args.model:
+            fallback_hash = source_hash(args.fallback_model, item.tokenized.text, glossary)
+            cached_translation = cache_db.get(item.unit_id, fallback_hash, args.fallback_model)
+            if cached_translation is not None:
+                origin = f"fallback:{args.fallback_model}"
+
+        if cached_translation is None and args.fallback_model:
             for fallback_path, fallback_db in fallback_dbs:
                 fallback_hash = source_hash(args.fallback_model, item.tokenized.text, glossary)
                 cached_translation = fallback_db.get(item.unit_id, fallback_hash, args.fallback_model)
@@ -538,7 +561,7 @@ def translate_locale(args: argparse.Namespace) -> int:
     if pending_api and translator is not None:
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.concurrency) as executor:
             future_map = {
-                executor.submit(translate_one, item, translator, glossary, args.model, args.retries): item
+                executor.submit(translate_one, item, translator, glossary, args.model, args.retries, args.provider): item
                 for item in pending_api
             }
             for future in concurrent.futures.as_completed(future_map):
@@ -550,7 +573,7 @@ def translate_locale(args: argparse.Namespace) -> int:
                     translated += 1
                     if args.progress:
                         print(
-                            f"[{processed}/{len(items)}] {result.item.unit_id} ok origin=openai "
+                            f"[{processed}/{len(items)}] {result.item.unit_id} ok origin={result.origin} "
                             f"translated={translated} cache_hits={cached} failed={len(failed)} "
                             f"api={format_seconds(result.api_seconds)} attempts={result.attempts}",
                             flush=True,
@@ -621,11 +644,20 @@ def main() -> int:
     parser.add_argument("--glossary", type=Path, default=Path("glossary/pt_BR_terms.json"))
     parser.add_argument("--phrases", type=Path, default=Path("glossary/pt_BR_phrases.json"))
     parser.add_argument("--cache-db", type=Path, default=Path("cache/translations.sqlite"))
-    parser.add_argument("--fallback-cache-db", type=Path, nargs="*", default=[])
-    parser.add_argument("--fallback-model", default="gpt-5.4-mini")
+    parser.add_argument(
+        "--fallback-cache-db",
+        type=Path,
+        nargs="*",
+        default=[],
+        help="Optional extra SQLite cache files to reuse before calling the API.",
+    )
+    parser.add_argument(
+        "--fallback-model",
+        help="Reuse successful translations from this model in the same SQLite DB or fallback DBs.",
+    )
     parser.add_argument("--report", type=Path, default=Path("cache/ai_translate_sqlite_report.json"))
     parser.add_argument("--env-file", type=Path, default=Path(".env"))
-    parser.add_argument("--provider", choices=("stub", "openai"), default="stub")
+    parser.add_argument("--provider", choices=("stub", "openai", "xai"), default="stub")
     parser.add_argument("--model", default="gpt-5.4-mini")
     parser.add_argument("--mode", choices=("pending", "all"), default="pending")
     parser.add_argument("--limit", type=int)

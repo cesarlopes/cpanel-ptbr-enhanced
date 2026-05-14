@@ -111,6 +111,30 @@ python scripts/ai_translate_locale.py --input output/pt_BR_extended.xlf --provid
 
 O cache em `cache/ai_translations.jsonl` reaproveita traducoes entre o canonico e o extended quando `id`, `source`, modelo e glossario forem iguais.
 
+### Traducao paralela com SQLite e multiplos provedores
+
+Para execucoes longas, prefira o script SQLite paralelo. Ele evita corromper cache em execucoes concorrentes e permite reaproveitar traducoes feitas por outro modelo antes de chamar uma nova API.
+
+Configure as chaves necessarias em `.env`:
+
+```env
+OPENAI_API_KEY=sk-...
+XAI_API_KEY=xai-...
+```
+
+Exemplo para continuar com xAI/Grok, reaproveitando primeiro tudo que ja foi traduzido com `gpt-5-mini` no mesmo banco SQLite:
+
+```bash
+python scripts/ai_translate_locale_sqlite.py --cache-db cache/translations.sqlite --provider xai --model grok-4-1-fast-non-reasoning --fallback-model gpt-5-mini --mode all --limit 15000 --retries 2 --checkpoint-every 250 --concurrency 3 --output output/pt_BR.grok.fast.sample15000.xlf
+```
+
+Nesse modo, a ordem e:
+
+1. usar cache do modelo atual;
+2. usar cache do `--fallback-model` no mesmo SQLite;
+3. usar caches informados em `--fallback-cache-db`, se existirem;
+4. chamar a API somente para o que ainda faltar.
+
 ## Reiniciar a traducao por IA
 
 Se o prompt, glossario ou qualidade desejada mudar bastante, use um cache novo ou remova o cache antigo:

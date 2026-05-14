@@ -81,19 +81,31 @@ class StubTranslator(Translator):
 
 
 class OpenAITranslator(Translator):
-    def __init__(self, model: str) -> None:
+    def __init__(self, model: str, provider: str = "openai") -> None:
         try:
             from openai import OpenAI
         except ImportError as exc:
             raise RuntimeError("Install the OpenAI SDK first: pip install openai") from exc
 
         self.model = model
-        api_key = os.environ.get("OPENAI_API_KEY")
+        self.provider = provider
+        if provider == "xai":
+            api_key = os.environ.get("XAI_API_KEY")
+            base_url = "https://api.x.ai/v1"
+            env_name = "XAI_API_KEY"
+        else:
+            api_key = os.environ.get("OPENAI_API_KEY")
+            base_url = None
+            env_name = "OPENAI_API_KEY"
+
         if not api_key:
             raise RuntimeError(
-                "OPENAI_API_KEY is not set. Add it to .env or export it in your shell."
+                f"{env_name} is not set. Add it to .env or export it in your shell."
             )
-        self.client = OpenAI(api_key=api_key)
+        if base_url:
+            self.client = OpenAI(api_key=api_key, base_url=base_url)
+        else:
+            self.client = OpenAI(api_key=api_key)
 
     def translate(self, source: str, *, unit_id: str, glossary: dict[str, Any], retry_note: str = "") -> str:
         preserve_terms = ", ".join(glossary.get("preserve", []))
@@ -102,6 +114,8 @@ class OpenAITranslator(Translator):
         instructions = (
             "You are revising cPanel & WHM XLIFF UI localization from English to Brazilian Portuguese. "
             "Use Brazilian Portuguese suitable for a technical hosting control panel. "
+            "Use correct Brazilian Portuguese spelling with accents and diacritics; do not omit accents in words such as domínio, domínios, usuário, usuários, configuração, configurações, opção, opções, informação, informações, ação, ações, permissão, permissões, autenticação, não. "
+            "Prefer natural Brazilian Portuguese UI wording; avoid awkward literal phrasing. "
             "Prefer clear UI language over literal translation. "
             "cPanel & WHM includes cron jobs, email accounts, DNS, SSL/TLS, FTP, SSH, databases, backups, packages, domains, and server administration. "
             "Short fragments may be labels, dropdown options, validation messages, or cron schedule descriptions. "
@@ -368,8 +382,8 @@ def translate_locale(args: argparse.Namespace) -> int:
     stats.load_cache += elapsed_since(cache_started)
     translator: Translator
 
-    if args.provider == "openai":
-        translator = OpenAITranslator(args.model)
+    if args.provider in ("openai", "xai"):
+        translator = OpenAITranslator(args.model, args.provider)
     else:
         translator = StubTranslator()
 
@@ -595,7 +609,7 @@ def translate_locale(args: argparse.Namespace) -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Translate XLF units with a stub or OpenAI provider.")
+    parser = argparse.ArgumentParser(description="Translate XLF units with a stub, OpenAI, or xAI provider.")
     parser.add_argument("--input", type=Path, default=Path("output/pt_BR.xlf"))
     parser.add_argument("--output", type=Path, default=Path("output/pt_BR.ai.xlf"))
     parser.add_argument("--glossary", type=Path, default=Path("glossary/pt_BR_terms.json"))
@@ -615,7 +629,7 @@ def main() -> int:
     )
     parser.add_argument("--report", type=Path, default=Path("cache/ai_translate_report.json"))
     parser.add_argument("--env-file", type=Path, default=Path(".env"))
-    parser.add_argument("--provider", choices=("stub", "openai"), default="stub")
+    parser.add_argument("--provider", choices=("stub", "openai", "xai"), default="stub")
     parser.add_argument("--model", default="gpt-5.4-mini")
     parser.add_argument("--mode", choices=("pending", "all"), default="pending")
     parser.add_argument("--limit", type=int, help="Translate at most N units.")
