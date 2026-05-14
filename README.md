@@ -187,6 +187,34 @@ python scripts/ai_translate_db.py --db cache/translations.sqlite --scope extende
 
 Use `--mode pending` para traduzir apenas o que ainda nao tem target valido. Use `--mode all` somente quando quiser refazer tambem itens que ja possuem target da cPanel ou IA.
 
+### Versionar revisoes manuais
+
+O SQLite completo fica local, mas as revisoes manuais podem ser exportadas para um JSONL pequeno e versionavel:
+
+```bash
+python scripts/export_reviewed_targets.py --db cache/translations.sqlite --output data/manual_targets.jsonl
+```
+
+Para restaurar essas revisoes em outro banco depois de importar os XLFs:
+
+```bash
+python scripts/import_reviewed_targets.py --db cache/translations.sqlite --input data/manual_targets.jsonl
+```
+
+Para backup completo dos targets atuais, incluindo cPanel, IA e manuais, use um snapshot compactado:
+
+```bash
+python scripts/export_locale_targets.py --db cache/translations.sqlite --origin all --output data/locale_targets_snapshot.jsonl.gz
+```
+
+Para restaurar:
+
+```bash
+python scripts/import_locale_targets.py --db cache/translations.sqlite --input data/locale_targets_snapshot.jsonl.gz
+```
+
+Snapshots completos podem ficar grandes e ficam ignorados pelo Git. Para versionamento normal, prefira `data/manual_targets.jsonl`.
+
 ## Reiniciar a traducao por IA
 
 Se o prompt, glossario ou qualidade desejada mudar bastante, use um cache novo ou remova o cache antigo:

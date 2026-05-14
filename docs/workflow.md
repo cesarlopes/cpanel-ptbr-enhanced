@@ -181,6 +181,28 @@ python scripts/ai_translate_db.py --db cache/translations.sqlite --scope extende
 
 O script grava em `translations` e `locale_targets`, entao a UI PHP e o build por banco refletem o progresso imediatamente.
 
+### Exportar revisoes manuais
+
+Para versionar somente as revisoes feitas na UI, exporte os targets manuais revisados:
+
+```bash
+python scripts/export_reviewed_targets.py --db cache/translations.sqlite --output data/manual_targets.jsonl
+```
+
+Em uma nova maquina ou banco reconstruido, importe os XLFs primeiro e depois restaure as revisoes:
+
+```bash
+python scripts/import_reviewed_targets.py --db cache/translations.sqlite --input data/manual_targets.jsonl
+```
+
+Para backup completo dos targets atuais:
+
+```bash
+python scripts/export_locale_targets.py --db cache/translations.sqlite --origin all --output data/locale_targets_snapshot.jsonl.gz
+```
+
+O snapshot completo inclui cPanel, IA e manuais. Ele e util para backup, mas nao e indicado para Git por poder ficar grande.
+
 ## 8. Traduzir tudo
 
 Canonico:

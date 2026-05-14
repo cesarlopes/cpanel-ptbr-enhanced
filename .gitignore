@@ -12,6 +12,10 @@ cache/*
 output/*
 !output/.gitkeep
 
+# Large portable snapshots. Keep reviewed manual_targets.jsonl versioned.
+data/*snapshot*.jsonl
+data/*snapshot*.jsonl.gz
+
 # OS/editor files.
 .DS_Store
 Thumbs.db
