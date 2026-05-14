@@ -143,6 +143,28 @@ python scripts/ai_translate_locale_sqlite.py --cache-db cache/translations.sqlit
 
 Com `--fallback-model`, o script consulta outro modelo no mesmo SQLite antes de chamar a API do provedor atual.
 
+### Banco de revisao
+
+Importe o original, as traducoes oficiais do cPanel e o cache de IA para as tabelas `locale_*`:
+
+```bash
+python scripts/import_locale_to_db.py --db cache/translations.sqlite --original locales/original/en.xlf --translated locales/translated/pt_br.xlf locales/translated/pt_br_2.xlf
+```
+
+Gere um resumo da cobertura:
+
+```bash
+python scripts/report_locale_db.py --db cache/translations.sqlite
+```
+
+Gere o XLF custom final:
+
+```bash
+python scripts/build_locale.py --from-db --db cache/translations.sqlite --source locales/original/en.xlf
+```
+
+O build gera `output/pt_BR.custom.xlf` e `output/pt_BR_extended.custom.xlf`. A prioridade de target e: manual revisado, IA aprovada, IA existente, cPanel valida e, por ultimo, source marcado como `needs-translation`.
+
 ## 8. Traduzir tudo
 
 Canonico:

@@ -135,6 +135,40 @@ Nesse modo, a ordem e:
 3. usar caches informados em `--fallback-cache-db`, se existirem;
 4. chamar a API somente para o que ainda faltar.
 
+### Banco de revisao e build custom
+
+Depois de importar os arquivos do WHM e/ou gerar traducoes por IA, carregue tudo para as tabelas de revisao no SQLite:
+
+```bash
+python scripts/import_locale_to_db.py --db cache/translations.sqlite --original locales/original/en.xlf --translated locales/translated/pt_br.xlf locales/translated/pt_br_2.xlf
+```
+
+Veja a cobertura atual:
+
+```bash
+python scripts/report_locale_db.py --db cache/translations.sqlite
+```
+
+Gere os arquivos finais a partir do banco:
+
+```bash
+python scripts/build_locale.py --from-db --db cache/translations.sqlite --source locales/original/en.xlf
+```
+
+Os arquivos gerados sao:
+
+```text
+output/pt_BR.custom.xlf
+output/pt_BR_extended.custom.xlf
+```
+
+Valide antes de importar no WHM:
+
+```bash
+python scripts/validate_xlf.py output/pt_BR_extended.custom.xlf
+python scripts/qa_translations.py output/pt_BR_extended.custom.xlf --json cache/qa_extended_custom.json --markdown cache/qa_extended_custom.md
+```
+
 ## Reiniciar a traducao por IA
 
 Se o prompt, glossario ou qualidade desejada mudar bastante, use um cache novo ou remova o cache antigo:
