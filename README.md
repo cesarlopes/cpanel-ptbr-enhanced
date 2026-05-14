@@ -169,6 +169,24 @@ python scripts/validate_xlf.py output/pt_BR_extended.custom.xlf
 python scripts/qa_translations.py output/pt_BR_extended.custom.xlf --json cache/qa_extended_custom.json --markdown cache/qa_extended_custom.md
 ```
 
+### Traducao direta pelo SQLite
+
+Depois que as tabelas `locale_*` existirem, o fluxo recomendado e traduzir direto no banco. O XLF fica apenas como entrada/saida do WHM.
+
+Canonical pendente com Grok:
+
+```bash
+python scripts/ai_translate_db.py --db cache/translations.sqlite --scope canonical --provider xai --model grok-4-1-fast-non-reasoning --fallback-model gpt-5-mini --mode pending --limit 1000 --retries 2 --checkpoint-every 250 --concurrency 3
+```
+
+Extended pendente com Grok:
+
+```bash
+python scripts/ai_translate_db.py --db cache/translations.sqlite --scope extended --provider xai --model grok-4-1-fast-non-reasoning --fallback-model gpt-5-mini --mode pending --limit 1000 --retries 2 --checkpoint-every 250 --concurrency 3
+```
+
+Use `--mode pending` para traduzir apenas o que ainda nao tem target valido. Use `--mode all` somente quando quiser refazer tambem itens que ja possuem target da cPanel ou IA.
+
 ## Reiniciar a traducao por IA
 
 Se o prompt, glossario ou qualidade desejada mudar bastante, use um cache novo ou remova o cache antigo:

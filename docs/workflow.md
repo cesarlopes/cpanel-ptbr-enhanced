@@ -165,6 +165,22 @@ python scripts/build_locale.py --from-db --db cache/translations.sqlite --source
 
 O build gera `output/pt_BR.custom.xlf` e `output/pt_BR_extended.custom.xlf`. A prioridade de target e: manual revisado, IA aprovada, IA existente, cPanel valida e, por ultimo, source marcado como `needs-translation`.
 
+### Traduzir direto pelo SQLite
+
+Com as tabelas `locale_*` importadas, traduza sem ler um XLF intermediario:
+
+```bash
+python scripts/ai_translate_db.py --db cache/translations.sqlite --scope canonical --provider xai --model grok-4-1-fast-non-reasoning --fallback-model gpt-5-mini --mode pending --limit 1000 --retries 2 --checkpoint-every 250 --concurrency 3
+```
+
+Para trabalhar no extended:
+
+```bash
+python scripts/ai_translate_db.py --db cache/translations.sqlite --scope extended --provider xai --model grok-4-1-fast-non-reasoning --fallback-model gpt-5-mini --mode pending --limit 1000 --retries 2 --checkpoint-every 250 --concurrency 3
+```
+
+O script grava em `translations` e `locale_targets`, entao a UI PHP e o build por banco refletem o progresso imediatamente.
+
 ## 8. Traduzir tudo
 
 Canonico:

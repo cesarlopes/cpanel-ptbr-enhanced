@@ -1,0 +1,278 @@
+:root {
+  --bg: #f6f7f9;
+  --panel: #ffffff;
+  --text: #1d2733;
+  --muted: #667085;
+  --line: #d9dee7;
+  --primary: #2f6fed;
+  --primary-strong: #1d58cc;
+  --green: #16794c;
+  --amber: #a15c00;
+  --red: #b42318;
+  --blue-soft: #eaf1ff;
+  --green-soft: #e8f6ef;
+  --amber-soft: #fff3df;
+  --shadow: 0 10px 30px rgba(29, 39, 51, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.shell {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.topbar {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.title h1 {
+  font-size: 22px;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.title p {
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+
+.stats {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+  margin-bottom: 18px;
+}
+
+.stat {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.stat span {
+  color: var(--muted);
+  display: block;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.stat strong {
+  font-size: 22px;
+}
+
+.toolbar,
+.editor,
+.table-wrap {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.toolbar {
+  align-items: end;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr 170px 150px 120px;
+  margin-bottom: 18px;
+  padding: 16px;
+}
+
+label {
+  color: var(--muted);
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+input,
+select,
+textarea {
+  background: #fff;
+  border: 1px solid #cfd6e2;
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  min-height: 38px;
+  padding: 9px 10px;
+  width: 100%;
+}
+
+textarea {
+  line-height: 1.45;
+  min-height: 150px;
+  resize: vertical;
+}
+
+button,
+.button {
+  align-items: center;
+  background: var(--primary);
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  font-weight: 700;
+  justify-content: center;
+  min-height: 38px;
+  padding: 9px 14px;
+}
+
+button:hover,
+.button:hover {
+  background: var(--primary-strong);
+  color: #fff;
+}
+
+.button.secondary {
+  background: #edf1f7;
+  color: var(--text);
+}
+
+.table-wrap {
+  overflow: hidden;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  border-bottom: 1px solid var(--line);
+  padding: 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: #f0f3f8;
+  color: #475467;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.id-cell {
+  font-family: Consolas, "Liberation Mono", monospace;
+  white-space: nowrap;
+}
+
+.source,
+.target {
+  max-width: 420px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.badge {
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 9px;
+  white-space: nowrap;
+}
+
+.badge.ai_cache {
+  background: var(--blue-soft);
+  color: var(--primary-strong);
+}
+
+.badge.cpanel {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.badge.manual,
+.badge.reviewed {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.badge.pending {
+  background: #fee4e2;
+  color: var(--red);
+}
+
+.pagination {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 14px;
+}
+
+.editor {
+  margin-bottom: 18px;
+  padding: 18px;
+}
+
+.editor-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.editor-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.notice {
+  background: var(--green-soft);
+  border: 1px solid #abefc6;
+  border-radius: 8px;
+  color: var(--green);
+  margin-bottom: 14px;
+  padding: 12px;
+}
+
+.error {
+  background: #fee4e2;
+  border: 1px solid #fecdca;
+  border-radius: 8px;
+  color: var(--red);
+  margin-bottom: 14px;
+  padding: 12px;
+}
+
+@media (max-width: 980px) {
+  .stats,
+  .toolbar,
+  .editor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .shell {
+    padding: 14px;
+  }
+}
+
