@@ -29,6 +29,7 @@ pip install -r requirements.txt
 ## Estrutura
 
 ```text
+i_pt_br_enhanced.custom.xlf
 locales/
   original/      arquivos originais em ingles exportados do WHM
   translated/    traducoes pt_BR oficiais/base exportadas do WHM
@@ -39,6 +40,10 @@ cache/           cache local e relatorios temporarios
 output/          arquivos finais gerados
 docs/            documentacao do fluxo
 ```
+
+O arquivo `i_pt_br_enhanced.custom.xlf` na raiz e uma copia pronta para
+importar no WHM como locale nao padrao `i_pt_br_enhanced`. Ele vem do build
+extended sem grupos plurais problematicos para o importador do cPanel.
 
 ## Fluxo recomendado para a primeira versao
 
@@ -178,7 +183,9 @@ python scripts/build_locale.py --from-db --db cache/translations.sqlite --source
 Isso gera `output/i_pt_br_enhanced.custom.xlf`,
 `output/i_pt_br_enhanced_extended.custom.xlf` e um JSON com as configuracoes
 esperadas para criar/copiar o locale no WHM. O fallback precisa ser configurado
-no WHM; ele nao fica dentro do XLF.
+no WHM; ele nao fica dentro do XLF. O nome que aparece no seletor do cPanel
+tambem vem da configuracao do locale nao padrao. Use o valor `display_name` do
+JSON gerado, por exemplo `Português Brasil (completa)`.
 
 Se o importador do cPanel falhar em unidades de pluralizacao `x-implied`,
 `x-explicit` ou em `source` vazio, gere uma variante sem grupos plurais:

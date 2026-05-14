@@ -19,6 +19,9 @@
   ],
   "translations": {
     "account": "conta",
+    "autoresponder": "resposta automática",
+    "autoresponders": "respostas automáticas",
+    "automated emails": "respostas automáticas",
     "backup": "backup",
     "certificate": "certificado",
     "domain": "dominio",

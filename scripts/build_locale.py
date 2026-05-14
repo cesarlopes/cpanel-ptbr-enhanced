@@ -287,6 +287,7 @@ def build_from_db(args: argparse.Namespace) -> int:
             config_path.parent.mkdir(parents=True, exist_ok=True)
             config = {
                 "locale_tag": args.target_language,
+                "display_name": args.display_name,
                 "fallback_locale": args.fallback_locale,
                 "number_formatting": args.number_formatting,
                 "character_orientation": args.character_orientation,
@@ -294,7 +295,7 @@ def build_from_db(args: argparse.Namespace) -> int:
                 "extended_xlf": str(args.extended_output),
                 "notes": [
                     "Create or copy this locale in WHM before upload.",
-                    "Set fallback, number formatting, and character orientation in WHM's Copy/Edit Locale interface.",
+                    "Set display name, fallback, number formatting, and character orientation in WHM's Copy/Edit Locale interface.",
                     "After upload, run /usr/local/cpanel/bin/build_locale_databases on the server.",
                 ],
             }
@@ -304,6 +305,7 @@ def build_from_db(args: argparse.Namespace) -> int:
     print(f"Extended custom output: {args.extended_output}")
     if args.locale_tag or args.fallback_locale:
         print(f"Locale tag: {args.target_language}")
+        print(f"Display name: {args.display_name}")
         print(f"Fallback locale: {args.fallback_locale}")
         print(f"Locale config: {config_path}")
     print(f"Canonical translated: {canonical_stats['translated']}")
@@ -325,6 +327,7 @@ def main() -> int:
     parser.add_argument("--extended-output", type=Path, default=Path("output/pt_BR_extended.custom.xlf"))
     parser.add_argument("--target-language", default="pt_br")
     parser.add_argument("--locale-tag", help="Custom WHM locale tag, for example i_pt_br_enhanced.")
+    parser.add_argument("--display-name", default="Português Brasil (completa)", help="Friendly name to document for WHM non-standard locale setup.")
     parser.add_argument("--fallback-locale", default="pt_BR", help="Fallback locale to document for WHM setup.")
     parser.add_argument("--number-formatting", default="pt_BR", help="Number formatting locale to document for WHM setup.")
     parser.add_argument("--character-orientation", default="left-to-right", help="Character orientation to document for WHM setup.")

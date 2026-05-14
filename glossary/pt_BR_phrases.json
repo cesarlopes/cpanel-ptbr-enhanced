@@ -1,4 +1,9 @@
 {
+  "Autoresponders": "Respostas automáticas",
+  "Copy autoresponders": "Copiar respostas automáticas",
+  "Current Autoresponders": "Respostas automáticas atuais",
+  "There are no autoresponders setup on this domain.": "Não há respostas automáticas configuradas neste domínio.",
+  "Configure an email account to send automated emails. This can be useful if you are on vacation or unavailable, or if you have a generic message that you wish to send from a support email address. For more information, read the [output,url,_1,documentation,target,_2,id,_3].": "Configure uma conta de email para enviar respostas automáticas. Isso pode ser útil se você estiver de férias ou indisponível, ou se tiver uma mensagem padrão que deseja enviar a partir de um endereço de email de suporte. Para obter mais informações, leia a [output,url,_1,documentação,target,_2,id,_3].",
   "(At one quarter past the hour.)": "(Aos 15 minutos de cada hora.)",
   "(At one half past the hour.)": "(Aos 30 minutos de cada hora.)",
   "(At one quarter until the hour.)": "(Aos 45 minutos de cada hora.)",
