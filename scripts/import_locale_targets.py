@@ -9,6 +9,8 @@ import sqlite3
 from pathlib import Path
 from typing import Any, Iterable, TextIO
 
+from refresh_locale_status import refresh_status
+
 
 def open_text_reader(path: Path) -> TextIO:
     if path.suffix == ".gz":
@@ -109,11 +111,13 @@ def import_targets(db_path: Path, input_path: Path, overwrite: bool) -> int:
                 ),
             )
             imported += 1
+        status_rows = refresh_status(conn)
         conn.commit()
 
     print(f"Imported locale targets: {imported}")
     print(f"Skipped: {skipped}")
     print(f"Overwrite: {overwrite}")
+    print(f"Status rows refreshed: {status_rows}")
     return 0
 
 

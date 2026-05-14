@@ -157,10 +157,41 @@ Gere um resumo da cobertura:
 python scripts/report_locale_db.py --db cache/translations.sqlite
 ```
 
+Depois de importacoes grandes ou muitas traducoes, otimize o banco usado pela UI:
+
+```bash
+python scripts/optimize_locale_db.py --db cache/translations.sqlite
+```
+
+A UI le `locale_unit_status`, um status materializado com o target atual e o
+estado de cada unidade. Para reconstruir esse cache de leitura:
+
+```bash
+python scripts/refresh_locale_status.py --db cache/translations.sqlite
+```
+
 Gere o XLF custom final:
 
 ```bash
 python scripts/build_locale.py --from-db --db cache/translations.sqlite --source locales/original/en.xlf
+```
+
+Para testar sem substituir o `pt_BR` oficial, gere uma variante para locale nao
+padrao:
+
+```bash
+python scripts/build_locale.py --from-db --db cache/translations.sqlite --source locales/original/en.xlf --locale-tag i_pt_br_enhanced --fallback-locale pt_BR --number-formatting pt_BR --character-orientation left-to-right
+```
+
+Antes de importar, crie/copie o locale `i_pt_br_enhanced` no WHM com fallback
+`pt_BR`. O XLF recebe `target-language="i_pt_br_enhanced"`; o fallback e
+configuracao do WHM e fica documentado no JSON gerado em `output/`.
+
+Se `/usr/local/cpanel/scripts/locale_import` falhar em frases com
+`ctype="x-implied"`, `ctype="x-explicit"` ou `source` vazio, gere a variante sem plural groups:
+
+```bash
+python scripts/build_locale.py --from-db --db cache/translations.sqlite --source locales/original/en.xlf --locale-tag i_pt_br_enhanced --fallback-locale pt_BR --number-formatting pt_BR --character-orientation left-to-right --exclude-plurals --output output/i_pt_br_enhanced.no_plurals.custom.xlf --extended-output output/i_pt_br_enhanced_extended.no_plurals.custom.xlf
 ```
 
 O build gera `output/pt_BR.custom.xlf` e `output/pt_BR_extended.custom.xlf`. A prioridade de target e: manual revisado, IA aprovada, IA existente, cPanel valida e, por ultimo, source marcado como `needs-translation`.
@@ -180,6 +211,14 @@ python scripts/ai_translate_db.py --db cache/translations.sqlite --scope extende
 ```
 
 O script grava em `translations` e `locale_targets`, entao a UI PHP e o build por banco refletem o progresso imediatamente.
+
+Para revisar apenas traducoes importadas do cPanel:
+
+```bash
+python scripts/ai_translate_db.py --db cache/translations.sqlite --scope extended --provider xai --model grok-4-1-fast-non-reasoning --mode review-origin --review-origin cpanel --limit 1000 --retries 2 --checkpoint-every 250 --concurrency 3
+```
+
+Esse comando cria uma nova alternativa de IA e preserva o target original cPanel no banco.
 
 ### Exportar revisoes manuais
 

@@ -30,6 +30,20 @@ Antes de abrir a UI, gere ou atualize as tabelas de revisao:
 python scripts/import_locale_to_db.py --db cache/translations.sqlite --original locales/original/en.xlf --translated locales/translated/pt_br.xlf locales/translated/pt_br_2.xlf
 ```
 
+Depois de importacoes grandes ou muitas traducoes, otimize os indices usados
+pela UI:
+
+```powershell
+python scripts/optimize_locale_db.py --db cache/translations.sqlite
+```
+
+A UI le a tabela materializada `locale_unit_status`. Ela e atualizada pelos
+scripts principais, mas tambem pode ser reconstruida manualmente:
+
+```powershell
+python scripts/refresh_locale_status.py --db cache/translations.sqlite
+```
+
 ## Recursos da v1
 
 - Lista paginada de unidades.
@@ -37,4 +51,3 @@ python scripts/import_locale_to_db.py --db cache/translations.sqlite --original 
 - Filtros por pendentes, IA, cPanel, manual e revisadas.
 - Edicao manual de target.
 - Salvamento como `origin=manual`, `provider=human` e `is_reviewed=1`.
-

@@ -25,6 +25,8 @@ from pathlib import Path
 from typing import Any
 from xml.etree import ElementTree as ET
 
+from refresh_locale_status import ensure_status_schema, refresh_status
+
 
 XLIFF_NS = "urn:oasis:names:tc:xliff:document:1.2"
 CP_NS = "tag:cpanel.net,2012-01:translate"
@@ -110,6 +112,7 @@ class SQLiteStore:
                 );
                 """
             )
+            ensure_status_schema(self.conn)
             self.conn.commit()
 
     def ensure_locale_tables(self) -> None:
@@ -221,6 +224,7 @@ class SQLiteStore:
                     1 if reviewed else 0,
                 ),
             )
+            refresh_status(self.conn, item.unit_id, ensure_schema=False)
             self.conn.commit()
 
 
@@ -419,8 +423,39 @@ def collect_items(store: SQLiteStore, args: argparse.Namespace, glossary: dict[s
               AND bt.origin IN ('manual', 'ai_cache', 'cpanel')
         )
     """
-    pending_clause = "WHERE rn = 1 AND ready = 0" if args.mode == "pending" else "WHERE rn = 1"
+    best_origin_expr = """
+        (
+            SELECT t.origin
+            FROM locale_targets t
+            WHERE t.unit_id = u.unit_id
+              AND t.source_hash = u.source_hash
+              AND t.quality_status IN ('valid', 'approved')
+            ORDER BY
+              CASE
+                WHEN t.origin = 'manual' AND t.is_reviewed = 1 THEN 1
+                WHEN t.origin = 'ai_cache' AND t.quality_status = 'approved' THEN 2
+                WHEN t.origin = 'ai_cache' THEN 3
+                WHEN t.origin = 'cpanel' THEN 4
+                ELSE 5
+              END,
+              t.updated_at DESC,
+              t.target_id DESC
+            LIMIT 1
+        )
+    """
+    where_parts = ["rn = 1"]
+    params: dict[str, object] = {}
+    if args.mode == "pending":
+        where_parts.append("ready = 0")
+    elif args.mode == "review-origin":
+        if not args.review_origin:
+            raise ValueError("--review-origin is required when --mode review-origin is used")
+        where_parts.append("best_origin = :review_origin")
+        params["review_origin"] = args.review_origin
+    pending_clause = "WHERE " + " AND ".join(where_parts)
     limit_clause = "LIMIT :limit" if args.limit is not None else ""
+    if args.limit is not None:
+        params["limit"] = args.limit
     sql = f"""
         WITH ranked AS (
             SELECT
@@ -429,6 +464,7 @@ def collect_items(store: SQLiteStore, args: argparse.Namespace, glossary: dict[s
                 u.source,
                 u.source_xml,
                 {ready_expr} AS ready,
+                {best_origin_expr} AS best_origin,
                 ROW_NUMBER() OVER (
                     PARTITION BY u.unit_id
                     ORDER BY
@@ -446,7 +482,7 @@ def collect_items(store: SQLiteStore, args: argparse.Namespace, glossary: dict[s
         ORDER BY unit_id ASC
         {limit_clause}
     """
-    cursor = store.conn.execute(sql, {"limit": args.limit} if args.limit is not None else {})
+    cursor = store.conn.execute(sql, params)
     rows = cursor.fetchall()
 
     items: list[WorkItem] = []
@@ -655,6 +691,7 @@ def translate_db(args: argparse.Namespace) -> int:
         "model": args.model,
         "fallback_model": args.fallback_model,
         "mode": args.mode,
+        "review_origin": args.review_origin,
         "processed": processed,
         "translated": translated,
         "cache_hits": cache_hits,
@@ -690,7 +727,12 @@ def main() -> int:
     parser.add_argument("--model", default="gpt-5.4-mini")
     parser.add_argument("--fallback-model")
     parser.add_argument("--scope", choices=("canonical", "extended"), default="canonical")
-    parser.add_argument("--mode", choices=("pending", "all"), default="pending")
+    parser.add_argument("--mode", choices=("pending", "all", "review-origin"), default="pending")
+    parser.add_argument(
+        "--review-origin",
+        choices=("manual", "ai_cache", "cpanel"),
+        help="When --mode review-origin is used, select units whose current best target has this origin.",
+    )
     parser.add_argument("--limit", type=int)
     parser.add_argument("--retries", type=int, default=1)
     parser.add_argument("--checkpoint-every", type=int)
@@ -699,6 +741,8 @@ def main() -> int:
     parser.add_argument("--no-progress", dest="progress", action="store_false")
     parser.set_defaults(progress=True)
     args = parser.parse_args()
+    if args.mode == "review-origin" and not args.review_origin:
+        parser.error("--review-origin is required when --mode review-origin is used")
 
     return translate_db(args)
 

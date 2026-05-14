@@ -149,10 +149,42 @@ Veja a cobertura atual:
 python scripts/report_locale_db.py --db cache/translations.sqlite
 ```
 
+Se a UI local ficar lenta depois de importar ou traduzir muitos registros,
+atualize os indices e estatisticas do SQLite:
+
+```bash
+python scripts/optimize_locale_db.py --db cache/translations.sqlite
+```
+
+A UI usa uma tabela materializada chamada `locale_unit_status`. Os scripts
+principais a atualizam automaticamente; para reconstruir manualmente:
+
+```bash
+python scripts/refresh_locale_status.py --db cache/translations.sqlite
+```
+
 Gere os arquivos finais a partir do banco:
 
 ```bash
 python scripts/build_locale.py --from-db --db cache/translations.sqlite --source locales/original/en.xlf
+```
+
+Para gerar uma variante de teste como locale nao padrao no WHM:
+
+```bash
+python scripts/build_locale.py --from-db --db cache/translations.sqlite --source locales/original/en.xlf --locale-tag i_pt_br_enhanced --fallback-locale pt_BR --number-formatting pt_BR --character-orientation left-to-right
+```
+
+Isso gera `output/i_pt_br_enhanced.custom.xlf`,
+`output/i_pt_br_enhanced_extended.custom.xlf` e um JSON com as configuracoes
+esperadas para criar/copiar o locale no WHM. O fallback precisa ser configurado
+no WHM; ele nao fica dentro do XLF.
+
+Se o importador do cPanel falhar em unidades de pluralizacao `x-implied`,
+`x-explicit` ou em `source` vazio, gere uma variante sem grupos plurais:
+
+```bash
+python scripts/build_locale.py --from-db --db cache/translations.sqlite --source locales/original/en.xlf --locale-tag i_pt_br_enhanced --fallback-locale pt_BR --number-formatting pt_BR --character-orientation left-to-right --exclude-plurals --output output/i_pt_br_enhanced.no_plurals.custom.xlf --extended-output output/i_pt_br_enhanced_extended.no_plurals.custom.xlf
 ```
 
 Os arquivos gerados sao:
@@ -186,6 +218,14 @@ python scripts/ai_translate_db.py --db cache/translations.sqlite --scope extende
 ```
 
 Use `--mode pending` para traduzir apenas o que ainda nao tem target valido. Use `--mode all` somente quando quiser refazer tambem itens que ja possuem target da cPanel ou IA.
+
+Para revisar apenas unidades cuja melhor traducao atual veio do cPanel:
+
+```bash
+python scripts/ai_translate_db.py --db cache/translations.sqlite --scope extended --provider xai --model grok-4-1-fast-non-reasoning --mode review-origin --review-origin cpanel --limit 1000 --retries 2 --checkpoint-every 250 --concurrency 3
+```
+
+Esse modo nao apaga a traducao cPanel; ele adiciona uma alternativa `ai_cache`, que tem prioridade no build final.
 
 ### Versionar revisoes manuais
 

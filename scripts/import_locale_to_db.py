@@ -18,6 +18,8 @@ from pathlib import Path
 from typing import Any
 from xml.etree import ElementTree as ET
 
+from refresh_locale_status import ensure_status_schema, refresh_status
+
 
 XLIFF_NS = "urn:oasis:names:tc:xliff:document:1.2"
 CP_NS = "tag:cpanel.net,2012-01:translate"
@@ -183,6 +185,12 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
         CREATE INDEX IF NOT EXISTS idx_locale_units_scope
             ON locale_units(canonical, extended);
 
+        CREATE INDEX IF NOT EXISTS idx_locale_units_canonical_order
+            ON locale_units(canonical, unit_id, updated_at, source_hash);
+
+        CREATE INDEX IF NOT EXISTS idx_locale_units_extended_order
+            ON locale_units(extended, canonical, unit_id, updated_at, source_hash);
+
         CREATE TABLE IF NOT EXISTS locale_targets (
             target_id INTEGER PRIMARY KEY AUTOINCREMENT,
             unit_id TEXT NOT NULL,
@@ -204,8 +212,21 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
 
         CREATE INDEX IF NOT EXISTS idx_locale_targets_unit
             ON locale_targets(unit_id, source_hash);
+
+        CREATE INDEX IF NOT EXISTS idx_locale_targets_best
+            ON locale_targets(unit_id, source_hash, quality_status, origin, is_reviewed, updated_at, target_id);
+
+        CREATE INDEX IF NOT EXISTS idx_locale_targets_origin_quality
+            ON locale_targets(origin, quality_status, unit_id, source_hash);
+
+        CREATE INDEX IF NOT EXISTS idx_locale_targets_reviewed
+            ON locale_targets(is_reviewed, quality_status, unit_id, source_hash);
+
+        CREATE INDEX IF NOT EXISTS idx_locale_targets_unit_origin
+            ON locale_targets(unit_id, origin, quality_status, updated_at, target_id);
         """
     )
+    ensure_status_schema(conn)
     conn.commit()
 
 
@@ -215,6 +236,7 @@ def reset_locale_tables(conn: sqlite3.Connection) -> None:
         DROP TABLE IF EXISTS locale_targets;
         DROP TABLE IF EXISTS locale_units;
         DROP TABLE IF EXISTS locale_imports;
+        DROP TABLE IF EXISTS locale_unit_status;
         """
     )
     conn.commit()
@@ -495,6 +517,7 @@ def main() -> int:
         ai_stats = {"imported": 0, "skipped": 0}
         if not args.skip_ai_cache:
             ai_stats = import_ai_cache(conn)
+        status_rows = refresh_status(conn)
         conn.commit()
 
     print(f"Database: {args.db}")
@@ -505,6 +528,7 @@ def main() -> int:
         print(f"Custom file imported: {path} units={stats['units']} targets={stats['targets']}")
     print(f"AI cache targets imported: {ai_stats['imported']}")
     print(f"AI cache rows skipped: {ai_stats['skipped']}")
+    print(f"Status rows refreshed: {status_rows}")
     return 0
 
 
