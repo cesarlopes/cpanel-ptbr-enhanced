@@ -138,11 +138,22 @@ $totalPages = max(1, (int) ceil(((int) $result['total']) / $pageSize));
             <form method="post">
                 <input type="hidden" name="unit_id" value="<?= h($editing['unit_id']) ?>">
                 <input type="hidden" name="source_hash" value="<?= h($editing['source_hash']) ?>">
-                <div class="editor-grid">
+                <div class="editor-grid <?= !empty($editing['cpanel_target']) ? 'three' : '' ?>">
                     <div>
                         <label>Source</label>
                         <textarea readonly><?= h($editing['source']) ?></textarea>
                     </div>
+                    <?php if (!empty($editing['cpanel_target'])): ?>
+                        <div>
+                            <label>
+                                Traducao original cPanel
+                                <?php if (($editing['cpanel_source_hash'] ?? '') !== $editing['source_hash']): ?>
+                                    <span class="label-note">outra versao</span>
+                                <?php endif; ?>
+                            </label>
+                            <textarea readonly><?= h($editing['cpanel_target']) ?></textarea>
+                        </div>
+                    <?php endif; ?>
                     <div>
                         <label>Traducao manual</label>
                         <textarea name="target"><?= h($editing['target'] ?? '') ?></textarea>

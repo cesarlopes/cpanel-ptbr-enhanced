@@ -107,6 +107,12 @@ label {
   margin-bottom: 6px;
 }
 
+.label-note {
+  color: var(--amber);
+  font-weight: 700;
+  margin-left: 6px;
+}
+
 input,
 select,
 textarea {
@@ -239,6 +245,10 @@ th {
   grid-template-columns: 1fr 1fr;
 }
 
+.editor-grid.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .editor-actions {
   display: flex;
   gap: 10px;
@@ -275,4 +285,3 @@ th {
     padding: 14px;
   }
 }
-

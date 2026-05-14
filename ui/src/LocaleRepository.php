@@ -95,7 +95,9 @@ final class LocaleRepository
                 bt.provider,
                 bt.model,
                 bt.quality_status,
-                bt.is_reviewed
+                bt.is_reviewed,
+                COALESCE(cpanel_exact.target, cpanel_any.target) AS cpanel_target,
+                COALESCE(cpanel_exact.source_hash, cpanel_any.source_hash) AS cpanel_source_hash
             FROM locale_units u
             LEFT JOIN locale_targets bt ON bt.target_id = (
                 SELECT t.target_id
@@ -113,6 +115,25 @@ final class LocaleRepository
                   END,
                   t.updated_at DESC,
                   t.target_id DESC
+                LIMIT 1
+            )
+            LEFT JOIN locale_targets cpanel_exact ON cpanel_exact.target_id = (
+                SELECT ct.target_id
+                FROM locale_targets ct
+                WHERE ct.unit_id = u.unit_id
+                  AND ct.source_hash = u.source_hash
+                  AND ct.origin = 'cpanel'
+                  AND ct.quality_status = 'valid'
+                ORDER BY ct.updated_at DESC, ct.target_id DESC
+                LIMIT 1
+            )
+            LEFT JOIN locale_targets cpanel_any ON cpanel_any.target_id = (
+                SELECT ct.target_id
+                FROM locale_targets ct
+                WHERE ct.unit_id = u.unit_id
+                  AND ct.origin = 'cpanel'
+                  AND ct.quality_status = 'valid'
+                ORDER BY ct.updated_at DESC, ct.target_id DESC
                 LIMIT 1
             )
             WHERE u.unit_id = :unit_id AND u.source_hash = :source_hash
