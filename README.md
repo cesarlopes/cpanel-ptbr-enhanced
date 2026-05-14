@@ -45,6 +45,26 @@ O arquivo `i_pt_br_enhanced.custom.xlf` na raiz e uma copia pronta para
 importar no WHM como locale nao padrao `i_pt_br_enhanced`. Ele vem do build
 extended sem grupos plurais problematicos para o importador do cPanel.
 
+## Instalar no cPanel/WHM
+
+Em um servidor com cPanel & WHM, acesse via SSH como `root` e rode:
+
+```bash
+cd /usr/local/src
+curl -L -o i_pt_br_enhanced.custom.xlf https://raw.githubusercontent.com/cesarlopes/cpanel-ptbr-enhanced/main/i_pt_br_enhanced.custom.xlf
+/usr/local/cpanel/scripts/locale_import --import=/usr/local/src/i_pt_br_enhanced.custom.xlf
+/usr/local/cpanel/bin/build_locale_databases
+```
+
+Depois, configure o locale nao padrao `i_pt_br_enhanced` no WHM:
+
+```text
+Display Name: Português Brasil (completa)
+Fallback Locale: pt_BR
+Number Formatting: pt_BR
+Character Orientation: left-to-right
+```
+
 ## Fluxo recomendado para a primeira versao
 
 1. Exporte do WHM:
