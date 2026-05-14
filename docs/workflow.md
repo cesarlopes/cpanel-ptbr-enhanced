@@ -184,7 +184,7 @@ python scripts/build_locale.py --from-db --db cache/translations.sqlite --source
 ```
 
 Antes de importar, crie/copie o locale `i_pt_br_enhanced` no WHM com fallback
-`pt_BR` e display name `Português Brasil (completa)`. O XLF recebe
+`pt_BR` e display name `Português Brasil (completo)`. O XLF recebe
 `target-language="i_pt_br_enhanced"`; o fallback e o nome exibido sao
 configuracao do WHM e ficam documentados no JSON gerado em `output/`.
 

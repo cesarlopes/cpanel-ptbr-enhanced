@@ -40,5 +40,5 @@ echo "==> Importando locale (isso pode levar alguns minutos)..."
 
 echo ""
 echo "==> Instalação concluída!"
-echo "    O locale '$LOCALE_TAG' agora aparece como 'Português Brasil (completa)'"
+echo "    O locale '$LOCALE_TAG' agora aparece como 'Português Brasil (completo)'"
 echo "    no seletor de idioma do cPanel e WHM."

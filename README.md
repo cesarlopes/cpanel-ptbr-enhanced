@@ -207,7 +207,7 @@ Isso gera `output/i_pt_br_enhanced.custom.xlf`,
 esperadas para criar/copiar o locale no WHM. O fallback precisa ser configurado
 no WHM; ele nao fica dentro do XLF. O nome que aparece no seletor do cPanel
 tambem vem da configuracao do locale nao padrao. Use o valor `display_name` do
-JSON gerado, por exemplo `Português Brasil (completa)`.
+JSON gerado, por exemplo `Português Brasil (completo)`.
 
 Se o importador do cPanel falhar em unidades de pluralizacao `x-implied`,
 `x-explicit` ou em `source` vazio, gere uma variante sem grupos plurais:

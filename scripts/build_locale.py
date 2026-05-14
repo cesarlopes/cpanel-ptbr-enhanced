@@ -327,7 +327,7 @@ def main() -> int:
     parser.add_argument("--extended-output", type=Path, default=Path("output/pt_BR_extended.custom.xlf"))
     parser.add_argument("--target-language", default="pt_br")
     parser.add_argument("--locale-tag", help="Custom WHM locale tag, for example i_pt_br_enhanced.")
-    parser.add_argument("--display-name", default="Português Brasil (completa)", help="Friendly name to document for WHM non-standard locale setup.")
+    parser.add_argument("--display-name", default="Português Brasil (completo)", help="Friendly name to document for WHM non-standard locale setup.")
     parser.add_argument("--fallback-locale", default="pt_BR", help="Fallback locale to document for WHM setup.")
     parser.add_argument("--number-formatting", default="pt_BR", help="Number formatting locale to document for WHM setup.")
     parser.add_argument("--character-orientation", default="left-to-right", help="Character orientation to document for WHM setup.")
