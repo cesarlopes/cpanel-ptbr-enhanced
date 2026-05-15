@@ -67,6 +67,25 @@ curl -fsSL -o /usr/local/src/i_pt_br_enhanced.custom.xlf https://raw.githubuserc
 
 </details>
 
+### Aplicar o locale em todas as contas
+
+Depois de instalar o locale, voce pode definir `i_pt_br_enhanced` como idioma
+das contas cPanel existentes:
+
+```bash
+for user in $(ls /var/cpanel/users)
+do
+  echo "Atualizando $user"
+  uapi --user="$user" Locale set_locale locale='i_pt_br_enhanced'
+done
+```
+
+Em seguida, reconstrua os bancos de locale do cPanel:
+
+```bash
+/usr/local/cpanel/bin/build_locale_databases
+```
+
 ## Fluxo recomendado para a primeira versao
 
 1. Exporte do WHM:
