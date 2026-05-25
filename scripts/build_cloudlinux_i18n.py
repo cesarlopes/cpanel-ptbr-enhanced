@@ -24,7 +24,18 @@ def compatible(source_value: Any, target_value: Any) -> bool:
     return not missing_tokens and not extra_tokens
 
 
-def translated_value(path: str, source_value: Any, legacy_flat: dict[str, Any]) -> tuple[Any, str]:
+def translated_value(
+    path: str,
+    source_value: Any,
+    legacy_flat: dict[str, Any],
+    overrides_flat: dict[str, Any],
+) -> tuple[Any, str]:
+    if path in overrides_flat:
+        override = overrides_flat[path]
+        if not compatible(source_value, override):
+            raise ValueError(f"Manual override has incompatible placeholders: {path}")
+        return override, "manual-override"
+
     if path in MANUAL_FIXES:
         fixed = MANUAL_FIXES[path]
         if compatible(source_value, fixed):
@@ -42,11 +53,21 @@ def translated_value(path: str, source_value: Any, legacy_flat: dict[str, Any]) 
 def build(args: argparse.Namespace) -> int:
     source = load_json(args.source)
     legacy = load_json(args.legacy)
+    overrides = load_json(args.overrides) if args.overrides.exists() else {}
     source_flat = flatten(source)
     legacy_flat = flatten(legacy)
+    overrides_flat = flatten(overrides)
+
+    unknown_overrides = sorted(set(overrides_flat) - set(source_flat))
+    if unknown_overrides:
+        raise ValueError(
+            "Manual overrides contain keys not found in the source JSON: "
+            + ", ".join(unknown_overrides[:10])
+        )
 
     output: dict[str, Any] = {}
     stats = {
+        "manual-override": 0,
         "manual-fix": 0,
         "legacy-path": 0,
         "legacy-source": 0,
@@ -56,7 +77,7 @@ def build(args: argparse.Namespace) -> int:
     }
 
     for path, source_value in source_flat.items():
-        value, origin = translated_value(path, source_value, legacy_flat)
+        value, origin = translated_value(path, source_value, legacy_flat, overrides_flat)
         set_path(output, path, deepcopy(value))
         stats[origin] += 1
 
@@ -94,6 +115,12 @@ def main() -> int:
         type=Path,
         default=Path("cloudlinux-i18n-ptbr/base.pt-br.json"),
         help="Legacy pt-br JSON translation memory.",
+    )
+    parser.add_argument(
+        "--overrides",
+        type=Path,
+        default=Path("cloudlinux-i18n-ptbr/manual_overrides.json"),
+        help="Manual pt-br overrides applied before legacy translation memory.",
     )
     parser.add_argument(
         "--output",

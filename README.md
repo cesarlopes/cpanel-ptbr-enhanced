@@ -387,7 +387,8 @@ Gere os JSONs customizados:
 python scripts/build_cloudlinux_i18n.py
 ```
 
-Isso usa `cloudlinux-i18n/base.en-en.json` como fonte moderna, reaproveita
+Isso usa `cloudlinux-i18n/base.en-en.json` como fonte moderna, aplica os
+overrides manuais de `cloudlinux-i18n-ptbr/manual_overrides.json`, reaproveita
 traducoes compativeis de `cloudlinux-i18n-ptbr/base.pt-br.json`, preserva chaves
 legadas nao conflitantes e gera:
 
@@ -401,6 +402,12 @@ Valide antes de copiar para o servidor:
 ```bash
 python scripts/validate_cloudlinux_i18n.py cloudlinux/i18n/i-pt_br_enhanced.json
 python scripts/validate_cloudlinux_i18n.py cloudlinux/i18n/i-pt-br-enhanced.json
+```
+
+Para verificar cobertura e listar strings ainda iguais ao ingles:
+
+```bash
+python scripts/report_cloudlinux_i18n.py
 ```
 
 No servidor, copie apenas os arquivos `i-pt_br_enhanced.json` e
