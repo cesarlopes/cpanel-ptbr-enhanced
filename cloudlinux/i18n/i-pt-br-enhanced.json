@@ -1822,5 +1822,44 @@
     "Processes Limit": "Limite de Processos",
     "Current PHP version": "Versão Atual do PHP",
     "PHP Version": "Versão PHP",
-    "Use Defaults": "Usar o padrão"
+    "Use Defaults": "Usar o padrão",
+    "Account Global Settings": "Configurações globais da conta",
+    "Account PHP Settings": "Configurações de PHP da conta",
+    "ACTION": "AÇÃO",
+    "CloudLinux PHP Selector": "PHP Selector do CloudLinux",
+    "Current usage": "Uso atual",
+    "cPanel Multi PHP Manager": "Gerenciador MultiPHP do cPanel",
+    "Dashboard": "Painel",
+    "DETAILS": "DETALHES",
+    "Disabled": "Desativado",
+    "DOMAIN": "DOMÍNIO",
+    "Domains that use:": "Domínios que usam:",
+    "HANDLED BY": "GERENCIADO POR",
+    "Isolated domains": "Domínios isolados",
+    "ISOLATION": "ISOLAMENTO",
+    "item(s)": "item(ns)",
+    "Items per page": "Itens por página",
+    "Items per page:": "Itens por página:",
+    "Not isolated domains": "Domínios não isolados",
+    "Per Domain Settings": "Configurações por domínio",
+    "PHP version": "Versão do PHP",
+    "Reset PHP Extensions to default": "Redefinir extensões PHP para o padrão",
+    "Resource usage": "Uso de recursos",
+    "Search by domain": "Pesquisar por domínio",
+    "Show domains": "Mostrar domínios",
+    "Snapshot": "Snapshot",
+    "Site Isolation has been denied by your server administrator": {
+        " Isolation toggles are disabled": {
+            " Contact your hosting provider for more information": {
+                "": "O isolamento de sites foi negado pelo administrador do servidor. Os controles de isolamento estão desativados. Entre em contato com seu provedor de hospedagem para mais informações."
+            }
+        }
+    },
+    "These settings apply to all your domains by default": {
+        " To override settings for a specific domain, go to": "Estas configurações se aplicam a todos os seus domínios por padrão. Para substituir as configurações de um domínio específico, acesse a aba",
+        " To override settings for a specific domain, go to Per Domain Settings tab": {
+            "": "Estas configurações se aplicam a todos os seus domínios por padrão. Para substituir as configurações de um domínio específico, acesse a aba Configurações por domínio."
+        }
+    },
+    "Use MultiPHP Manager": "Usar MultiPHP Manager"
 }

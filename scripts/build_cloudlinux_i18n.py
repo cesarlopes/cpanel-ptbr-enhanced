@@ -54,9 +54,11 @@ def build(args: argparse.Namespace) -> int:
     source = load_json(args.source)
     legacy = load_json(args.legacy)
     overrides = load_json(args.overrides) if args.overrides.exists() else {}
+    extra_overrides = load_json(args.extra_overrides) if args.extra_overrides.exists() else {}
     source_flat = flatten(source)
     legacy_flat = flatten(legacy)
     overrides_flat = flatten(overrides)
+    extra_overrides_flat = flatten(extra_overrides)
 
     unknown_overrides = sorted(set(overrides_flat) - set(source_flat))
     if unknown_overrides:
@@ -74,6 +76,8 @@ def build(args: argparse.Namespace) -> int:
         "source-fallback": 0,
         "legacy-extra": 0,
         "legacy-extra-conflict": 0,
+        "extra-override": 0,
+        "extra-override-conflict": 0,
     }
 
     for path, source_value in source_flat.items():
@@ -91,6 +95,14 @@ def build(args: argparse.Namespace) -> int:
                 stats["legacy-extra-conflict"] += 1
                 continue
             stats["legacy-extra"] += 1
+
+    for path, value in extra_overrides_flat.items():
+        try:
+            set_path(output, path, deepcopy(value))
+        except ValueError:
+            stats["extra-override-conflict"] += 1
+            continue
+        stats["extra-override"] += 1
 
     dump_json(args.output, output)
     print(f"Built CloudLinux i18n JSON: {args.output}")
@@ -121,6 +133,12 @@ def main() -> int:
         type=Path,
         default=Path("cloudlinux-i18n-ptbr/manual_overrides.json"),
         help="Manual pt-br overrides applied before legacy translation memory.",
+    )
+    parser.add_argument(
+        "--extra-overrides",
+        type=Path,
+        default=Path("cloudlinux-i18n-ptbr/extra_overrides.json"),
+        help="Extra literal i18n keys not present in the modern en-en JSON.",
     )
     parser.add_argument(
         "--output",
