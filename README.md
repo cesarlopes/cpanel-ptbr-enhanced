@@ -374,3 +374,35 @@ Exemplo importante:
 - `output/pt_BR.xlf` e `output/pt_BR_extended.xlf` sao artefatos reproduziveis.
 - Nao edite o `source` manualmente; revise sempre o `target`.
 - Preserve placeholders como `[_1]`, `%s`, `%d`, `{name}`, `{{name}}` e `:name`.
+
+## CloudLinux i18n JSON
+
+Algumas telas do CloudLinux dentro do cPanel, como PHP Selector e Resource Usage,
+usam JSONs proprios fora do XLF do cPanel. Nao sobrescreva `en-en.json`; ele deve
+continuar como fallback original do CloudLinux.
+
+Gere os JSONs customizados:
+
+```bash
+python scripts/build_cloudlinux_i18n.py
+```
+
+Isso usa `cloudlinux-i18n/base.en-en.json` como fonte moderna, reaproveita
+traducoes compativeis de `cloudlinux-i18n-ptbr/base.pt-br.json`, preserva chaves
+legadas nao conflitantes e gera:
+
+```text
+cloudlinux/i18n/i-pt_br_enhanced.json
+cloudlinux/i18n/i-pt-br-enhanced.json
+```
+
+Valide antes de copiar para o servidor:
+
+```bash
+python scripts/validate_cloudlinux_i18n.py cloudlinux/i18n/i-pt_br_enhanced.json
+python scripts/validate_cloudlinux_i18n.py cloudlinux/i18n/i-pt-br-enhanced.json
+```
+
+No servidor, copie apenas os arquivos `i-pt_br_enhanced.json` e
+`i-pt-br-enhanced.json` para os diretorios `assets/i18n` do CloudLinux. Mantenha
+`en-en.json` intacto.

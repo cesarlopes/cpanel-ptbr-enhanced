@@ -1,0 +1,694 @@
+{
+    "LANG_CODE": "en",
+    "ERROR": {
+        "lvemanagerFileMissingOrCorrupt": "Incorrect server response. Please contact your hoster.",
+        "not_available_plugin": "{pluginName} is not available. Please, contact your hoster.",
+        "not_available_passenger": "Apache Passenger is required by {pluginName}. Please, contact your hoster.",
+        "not_supported_kernel": "Resellers limits are only available for kernels starting with the version {resellerKernelVersion}.<br>If you want to use Reseller's limits, please update your kernel to the version {resellerKernelVersion} or higher.",
+        "not_supported_OS": "Resellers limits are only available for CL7 kernels starting with the version {resellerKernelVersion}.<br>If you want to use Reseller's limits, please update your kernel to CL6h with the version {resellerKernelVersion} or higher. <br>Follow the instruction to migrate from normal to hybrid kernel <a target='_blank' href='https://docs.cloudlinux.com/index.html?hybrid_kernel.html'>https://docs.cloudlinux.com/index.html?hybrid_kernel.html</a>.",
+        "wrong_received_data": "The received data is wrong. Contact support for resolution.",
+        "undefined": "Undefined error",
+        "expired_session": "It seems your session expired. Please log in to the platform. You will be redirected to login page.",
+        "undefined_action": "Undefined action",
+        "login_by_admin": "Please use Admin Level",
+        "errWithoutMessage": "Unknown error occurred. Contact support for resolution.",
+        "hittingAccountsLimitTitle": "Hosting accounts have exceeded the allowed limit.",
+        "hittingAccountsLimitDescription": "Review your hosting accounts to ensure compliance with the allowed limit for your edition. If you want to use the capabilities of the CloudLinux on a server with more accounts, you may consider using <a href='https://www.cloudlinux.com/cloudlinux-os-plus' target='_blank'>Cloudlinux OS Shared PRO</a>.",
+        "hittingAccountsLimitDescriptionSolo": "Your server is running CloudLinux OS Solo (limit: 1 account). To continue using CloudLinux features with more accounts, upgrade to CloudLinux OS Admin (up to 5 accounts). If you plan to host more than 5, consider CloudLinux OS Shared Pro.",
+        "hittingAccountsLimitDescriptionAdmin": "Your server is running CloudLinux OS Admin (limit: 5 accounts). To continue using CloudLinux features with more accounts, upgrade to CloudLinux OS Shared Pro.",
+        "hittingAccountsLimitCompactSolo": "You are using <b>CloudLinux OS Solo</b>, which allows only <b>1 account</b>.<br>More users were detected on this server than your plan permits.<br><br><b>What to do?</b><br><b>Option 1 — Stay on the current plan</b><br>Remove extra accounts so that only 1 user remains.<br><br><b>Option 2 — Need more users</b><br>Upgrade the license:<br>— <b>CloudLinux OS Admin</b> — up to 5 users<br>— <b>CloudLinux OS Shared Pro</b> — more than 5 users<br><br><b>How to upgrade the license?</b><br>1) Purchase a new license in <a href='https://cln.cloudlinux.com/' target='_blank'>CLN</a>. (Cancel the current license if needed.)<br>2) Log in to the server console as <b>root</b>.<br>3) Activate the license by type:<br>For activation key:<br><pre><code>rhnreg_ks --force --activationkey=&lt;NEW_KEY&gt;</code></pre><br>For IP-based:<br><pre><code>clnreg_ks --force</code></pre><br>If you purchased the license not directly through CLN, contact your reseller for upgrade assistance.",
+        "hittingAccountsLimitCompactAdmin": "You are using <b>CloudLinux OS Admin</b>, which allows only <b>5 accounts</b>.<br>More users were detected on this server than your plan permits.<br><br><b>What to do?</b><br><b>Option 1 — Stay on the current plan</b><br>Remove extra accounts so that no more than 5 users remain.<br><br><b>Option 2 — Need more users</b><br>Upgrade the license:<br>— <b>CloudLinux OS Shared Pro</b> — more than 5 users<br><br><b>How to upgrade the license?</b><br>1) Purchase a new license in <a href='https://cln.cloudlinux.com/' target='_blank'>CLN</a>. (Cancel the current license if needed.)<br>2) Log in to the server console as <b>root</b>.<br>3) Activate the license by type:<br>For activation key:<br><pre><code>rhnreg_ks --force --activationkey=&lt;NEW_KEY&gt;</code></pre><br>For IP-based:<br><pre><code>clnreg_ks --force</code></pre><br>If you purchased the license not directly through CLN, contact your reseller for upgrade assistance.",
+        "kernelIsNotSupportedTitle": "Reboot your system to update the kernel.",
+        "kernelIsNotSupportedDescription": "If this message is displayed after reboot, please contact <a href='https://cloudlinux.zendesk.com/hc/requests/new' target='_blank'>support</a>",
+        "cagefsDisabled": "Cannot manage PHP versions when CageFS is disabled",
+        "phpSelectorDisabled": "PHP Selector disabled",
+        "systemVersionAltPHP": "System default PHP version is alt-php. PHP Selector is disabled. Use cPanel MultiPHP manager instead"
+    },
+    "WARNING": {
+        "nativeWarning": "You have selected native PHP version. Changing PHP modules and options is impossible for the native version. You need to select a different PHP version from the dropdown above to enable PHP modules and options configuration.",
+        "limit_under_reseller": "This reseller’s end user is managed by reseller’s limits. Please, login as reseller to manage reseller’s end user limits.",
+        "package_under_reseller": "This reseller’s package is managed by reseller. Please, login as reseller to manage reseller’s package.",
+        "no_limits_to_change": "Nothing to edit yet: Your edition lacks LVE limits support, yet enabling Disk Quota on the server will allow for its management here",
+        "UserOfResellerManageWarning": {
+            "title": "Cannot manage Reseller Limits.",
+            "description": "This reseller’s end user is managed by Reseller Limits. Please, login as Reseller to manage reseller’s end user limits."
+        },
+        "PackageOfResellerManageWarning": {
+            "title": "Cannot manage Reseller Limits for package.",
+            "description": "This reseller’s package is managed by Reseller. Please, login as Reseller to manage reseller’s package."
+        },
+        "daemonScriptsRunWarning": {
+            "title": "Running daemon scripts in UI is not recommended.",
+            "description": "If you run daemon scripts, you will not be able to stop them from UI."
+        },
+        "portListenersWarning": {
+            "title": "Running scripts that listen to any port is not recommended.",
+            "description": "If you run scripts that listen to any port, they will be available only from server."
+        },
+        "packageJsonFileAbsent": "package.json file is required. Add package.json file to run \"npm install\"",
+        "disabledByHoster": {
+            "title": "The current version is disabled by hoster.",
+            "description": "In case you change the version, you will not be able to use it anymore."
+        },
+        "LimitsRestrictModeRequired": {
+            "title": "Available only when MySQL Governer restricted mode is set to limit."
+        },
+        "PeriodRestrictModeRequired": {
+            "title": "Available only when MySQL Governer restricted mode is set to period."
+        },
+        "mySqlGov_is_disabled": "MySQL governor is disabled in the system. Please, run \"service db_governor restart\" to start the service",
+        "mySqlGov_is_installing": "MySQL governor is installing in the system. Please wait service running.",
+        "switchSelector": "If you disable {interpreter}, all users won't be able to manage their applications",
+        "restriction_of_default_version": "It's impossible to remove default version. To remove default version set any other version as default.",
+        "restriction_of_moving_apps": "It's impossible to remove version with applications. Move all existing applications into another available version.",
+        "restriction_of_parallel_process": "One process of (un)installation has been executed already.",
+        "restriction_of_switch_version": "It's impossible to switch off default version.",
+        "governor_mode_all_deprecated": "MySQL Governor mode \"all\" was deprecated. Please use the \"abusers\" mode.",
+        "governor_mode_single_deprecated": "MySQL Governor mode \"single\" was deprecated. Please use the \"abusers\" mode.",
+        "manage_user_option_disabled_by_admin": "You cannot manage this option. Contact your administrator to enable it."
+    },
+    "confirmationMessage": {
+        "default": "These changes will be saved. Are you sure you want it?",
+        "switchLimits": "Are you sure you want to {status} limits?",
+        "switchSelector": "Are you sure you want to make {selector} {status}?",
+        "switchVersion": "Switch default PHP version to {version}?",
+        "hidePhpExtensions": "Are you sure you want to hide php extensions?",
+        "showPhpExtensions": "Are you sure you want to show php extensions?",
+        "hideDomainsTab": "Are you sure you want to hide domains tab for users?",
+        "showDomainsTab": "Are you sure you want to show domains tab for users?",
+        "enableSelector": "Enable {selector} selector?",
+        "disableSelector": "Disable {selector} selector?",
+        "makeDefaultSelector": "Are you sure you want to change %(interpreter)s default version to %(version)s?",
+        "cancelWizardModule": "Are you sure you want to cancel installing %(module)s?",
+        "installSelector": "Are you sure you want to install %(interpreter)s %(version)s?",
+        "switchStatusOfSelector": "Are you sure you want to %(status)s %(interpreter)s %(version)s?",
+        "uninstallSelector": "Are you sure you want to uninstall<br>%(interpreter)s %(version)s?",
+        "moveApplicationsIntoAnotherNodeJsVersion": "By removing Node.js version (%(version)s) all applications must be removed in another available version.",
+        "removeApplication": "Are you sure you want to remove {appName} application?",
+        "removeEnvironment": "Are you sure you want to remove environment variable?",
+        "removeConfigFile": "Are you sure you want to remove confuguration file {name}?",
+        "migrateConfirmation": {
+            "title": "Migrate application",
+            "text": "Your application will be migrated to new Python selector. The process can take up to 30 seconds. Upon migration, you will get a confirmation.\n\nClick \"Migrate\" to start."
+        },
+        "change_cagefs_status_enable": "Enable CageFS for {number} user(s)?",
+        "change_cagefs_status_disable": "Disable CageFS for {number} user(s)?",
+        "toggle_cagefs_enable": "Enable CageFS for user {username}?",
+        "toggle_cagefs_disable": "Disable CageFS for user {username}?",
+        "change_isolation_status_allow": "Allow Site Isolation for {number} user(s)?",
+        "change_isolation_status_deny": "Deny Site Isolation for {number} user(s)?",
+        "toggle_isolation_allow": "Allow Site Isolation for user {username}?",
+        "toggle_isolation_deny": "Deny Site Isolation for user {username}?"
+    },
+    "INFO": {
+        "pythonVirtualEnv": {
+            "title": "Enter to the virtual environment.",
+            "text": "To enter to virtual environment, run the command: [[source {activatePath} && cd {userHomeDir}{app}]]"
+        },
+        "nodeVirtualEnv": {
+            "title": "Enter to the virtual environment.",
+            "text": "To enter to virtual environment, run the command: [[source {activatePath} && cd {userHomeDir}{app}]]"
+        },
+        "currentVersionIsDisabled": "The current version is disabled by hoster. In case you change the version, you will not be able to use it anymore.",
+        "versionWarning": "Some modules might be incompatible with different versions of Python.",
+        "EmailTemplatesPath": {
+            "title": "You can find email templates in: /usr/share/lve/emails/en_US folder",
+            "description": "To translate, create a copy of that folder for the desired locale."
+        },
+        "ResellerWithoutLimitsNotifications": {
+            "title": "Notifications for Reseller without limits will work with the same frequency as hoster notifications."
+        },
+        "SaveFilePathAndPeriod": {
+            "title": "Files are saved in /var/lve/dbgovernor-store and being kept for 10 days."
+        },
+        "noFoundApplication": "Application does not exist",
+        "noFoundReport": "Report does not exist",
+        "noFoundNodeJSVersions": "No alt-nodejs packages were found. Please check license and yum settings for repositories.",
+        "noFoundPythonVersions": "No alt-python packages were found. Please check license and yum settings for repositories.",
+        "noApplicationsFound": "No Applications found",
+        "PythonApplicationNeedMigrage": {
+            "title": "Legacy application mode",
+            "description": "Your application was created in legacy version of Cloudlinux selector and does not support all features. You can migrate your application by pushing button below. Please note, that migration may cause downtime."
+        },
+        "PythonApplicationChangeVersionLockedMessage": "This application was created in the legacy version of CloudLinux Python Selector and doesn't support all features. You cannot change the Python version and use all new features for this application until the user migrates this application to the new CLoudLinux Python Selector. See <a target=\"_blank\" href=\"https://docs.cloudlinux.com/python_selector\">here</a> for more details."
+    },
+    "DASHBOARD": {
+        "ModuleEnabled": "Enabled",
+        "ModuleDisabled": "Disabled",
+        "ModuleNotInstalled": "Not installed",
+        "ModuleInstalled": "Installed",
+        "Nodejs": "Allows end users to select the specific version of Node.js they need.",
+        "Ruby": "Allows end users to select the specific version of Ruby they need.",
+        "Resellers": "Limits resources (CPU, IO, memory, etc) per each reseller. Resellers can limit resources for their end users.",
+        "Governor": "Monitors MySQL usage to throttle abusers, preventing server overload and improving overall performance.",
+        "Cagefs": "A virtualized per-user file system encapsulates each customer into a ‘cage’ preventing them from seeing each other and viewing sensitive information.",
+        "Python": "Allows end users to select the specific version of Python they need.",
+        "Modlsapi": "Fastest and most reliable way to serve PHP pages, a drop-in replacement for SuPHP, FCGID, RUID2, and ITK.",
+        "PHP": "Allows end users to select the specific version of PHP they need, with over 120 PHP extensions to choose from.",
+        "welcomeMessage": {
+            "title": "Thank you for using CloudLinux OS!",
+            "description": "There is no data collected for your server yet. You can update now with the \"Refresh\" button. This can last between 10 seconds and 1 hour, depending on server load, users and applications."
+        },
+        "RefreshDataHint": {
+            "title": "Dashboard data is collected daily.",
+            "description": "To update manually, press \"Refresh\". This can last between 10 seconds and 1 hour, depending on server load, users and applications."
+        },
+        "StolenLicence": {
+            "title": "CloudLinux OS license failure.",
+            "description": "Your CloudLinux OS license is used on another server. Please contact our support team to solve this issue."
+        },
+        "StatCollectionOff": {
+            "title": "Statistics collection is off.",
+            "description": "Collecting of statistics is turned off on your server. To activate daily statistics for your server, run command [[cloudlinux-summary enable]]."
+        },
+        "ServerUnavailable": {
+            "title": "Server unavailable",
+            "description": "There is a problem getting statistics for the dashboard from online databases. Please try again later."
+        },
+        "RefreshData": {
+            "title": "Dashboard data is collected daily and can be outdated!",
+            "description": "Please <strong>refresh dashboard</strong> to get relevant data"
+        },
+        "RefreshingData": {
+            "title": "Refresh is in progress.",
+            "description": "This can last between 10 seconds and 1 hour, depending on server load, users and applications."
+        },
+        "lastUpdateResult": "Result of the last update",
+        "refreshModalMessage": "It normally takes 10 seconds -  one hour depending on server perfomance, count of users and applications.",
+        "lastUpdateWas": "Last update was:",
+        "refreshDashboard": "Refresh dashboard",
+        "retry": "Retry",
+        "loading": "Loading...",
+        "modalHeader": "Are you sure you want to refresh data?",
+        "statisticCollected": "Statistics collected {time}",
+        "statisticIsAbsent": "Statistic was not collected yet",
+        "STATUS": {
+            "Enabled": "Enabled",
+            "Disabled": "Disabled",
+            "Malfunction": "Malfunction",
+            "Installed": "Installed",
+            "Configured": "Configured",
+            "Not installed": "Not installed",
+            "Not initialized": "Not initialized",
+            "Skipped": "Skipped",
+            "Error": "Error",
+            "Unknown": "Unknown",
+            "None": "None",
+            "Queued": "Queued",
+            "Installation failed": "Installation failed",
+            "Configuration failed": "Configuration failed",
+            "Installing": "Installing",
+            "Configuring": "Configuring"
+        },
+        "HINT": {
+            "php_selector": "PHP related issues detected. Click the «Manage» button for more details.",
+            "mysql_governor": "MySQL governor is not configured properly. Please configure MySQL Governor according to documentation https://docs.cloudlinux.com/control_panel_integration/#mysql-governor. <br> <b>Note: Dashboard data is collected daily and can be outdated! Please refresh dashboard to get relevant data.</b>"
+        }
+    },
+    "WIZARD": {
+        "Nodejs": "Node.js Selector is a CloudLinux component that allows each user to easily create Node.js applications, choose Node.js version and other parameters for applications based on their needs.",
+        "Ruby": "Allows end users to select the specific version of Ruby they need.",
+        "Resellers": "Limits resources (CPU, IO, memory, etc) per each reseller. Resellers can limit resources for their end users.",
+        "Governor": "MySQL Governor is software to monitor and restrict MySQL usage in shared hosting environment. The monitoring is done via resource usage statistics per each MySQL thread.",
+        "Cagefs": "CageFS is a virtualized file system and a set of tools to contain each user in its own 'cage'. Each customer will have its own fully functional CageFS, with all the system files, tools, etc. The CageFS is required for PHP Selector.",
+        "Python": "Allows end users to select the specific version of Python they need.",
+        "Modlsapi": "This is an Apache module based on LiteSpeed Technologies API for PHP. It offers excellent PHP performance, low memory footprint coupled with great security and support for opcode caching",
+        "PHP": "This section lets you configure the PHP interpreters and PHP Selector, both CloudLinux components that sit on top of CageFS. Users can select their own PHP versions and modules. The PHP Selector requires an enabled CageFS account.",
+        "WelcomeHeader": "Thank you for installing CloudLinux OS!",
+        "WelcomeDescription": "Thank you for installing CloudLinux OS. This wizard will help you configure all of its components.",
+        "SkipConfirmation": "Are you sure you want to skip configuration?"
+    },
+    "SUPPORT": {
+        "attachments": "Attachments",
+        "attachmentsMore": "You can attach up to 5 files. Each one must be 2Mb or less",
+        "description": "Description",
+        "descriptionMore": "Please enter the details of your request. A member of our support staff will respond as soon as possible",
+        "subject": "Subject",
+        "emailAddress": "Your email address",
+        "clnAccountOptional": "CLN account (optional)",
+        "clnAccountOptionalMore": "Please fill in your CLN account name",
+        "runDoctor": "Run CloudLinux doctor",
+        "runDoctorDescription": "CloudLinux doctor collects information about your server and attaches it to this support ticket",
+        "attachFile": "Attach files",
+        "orMoveFile": "or drag it here",
+        "clnAccount": "CLN account",
+        "success": {
+            "title": "Request has been successfully sent to support.",
+            "subtitle": "You will receive an email with further information within several minutes.",
+            "link": "Here is the direct link:"
+        },
+        "errors": {
+            "required": {
+                "email": "Email required.",
+                "subject": "Subject required.",
+                "description": "Description required."
+            },
+            "invalid": {
+                "email": "Email address is not valid."
+            },
+            "maxFiles": "The maximum number of files is {maxCount}",
+            "maxFileSize": "File {name} can't be uploaded because size is over {maxSize}"
+        },
+        "virtualAssistant": {
+            "maintenance": {
+                "title": "Virtual Assistant is under maintenance",
+                "description": "Please use Support Portal for any information you need, or create a ticket through Zendesk.",
+                "portalLink": "Support Portal",
+                "ticketLink": "Create Zendesk ticket"
+            }
+        }
+    },
+    "currentPHPVersion": "Current PHP version",
+    "PHPVersion": "Current PHP version",
+    "setAsCurrent": "Set as current",
+    "apply": "Apply",
+    "phpVersionCaptionItem": "{version} {modifier}",
+    "phpVersionCaptionItemCurrent": "{version} (current{modifier})",
+    "useDefault": "Reset to default",
+    "switchToPHPExtensions": "Switch to PHP extensions",
+    "switchToPHPOptions": "Switch to PHP options",
+    "settingsSaved": "Switch to PHP options",
+    "FollowRPMInstructions": "Follow the instructions from <a href='https://cloudlinux.zendesk.com/hc/en-us/articles/115004075294-Fix-rpmdb-Thread-died-in-Berkeley-DB-library' target='_blank'> documentation </a>",
+    "Can't run %(command)s": "Can't run %(command)s",
+    "dashboardIsUpdating": "Refresh in progress, can take up to 60 minutes",
+    "%(days)s days": "%(days)s days",
+    "By Username": "Username",
+    "By Domain": "Domain",
+    "applicationsCounts": "Running applications/all applications",
+    "applicationsCountAll": "All applications",
+    "users count": "users",
+    "ERROR: please install or reinstall cagefs": "CageFS package is not installed. Please refer to this  <a target=\"_blank\" href=\"{cagefs}\">{cagefs}</a> for installation instructions.",
+    "Collecting statistics was failed. Error report has been sent to developers and will be fixed soon": "Collecting statistics was failed. Error report has been sent to developers and will be fixed soon. If you need help - please contact our support at https:\/\/cloudlinux.zendesk.com\/hc\/requests\/new",
+    "restrictedUser": "{{reason}}. Restricted for next {{time}} seconds.",
+    "Please, login as reseller to manage reseller’s end user limits": "Please, log in as reseller to manage reseller’s end user limits",
+    "%(what)s set error for package=%(package)s%(error)s": "Setting of limits %(error)s for package %(package)s caused the error.",
+    "%(what)s set error for uid=%(uid)s%(error)s": "Setting of limits %(error)s for user %(uid)s caused the error.",
+    " [error: Speed limit error]": "SPEED",
+    "Manage_users": "Manage",
+    "Manage_packages": "Manage",
+    "Using [v2]": "Using",
+    "Average SPEED [v2]": "Average SPEED",
+    "Average MySQL SPEED [v2]": "Average MySQL SPEED",
+    "Average IO [v2]": "Average IO",
+    "Average MySQL IO [v2]": "Average MySQL IO",
+    "Average IOPS [v2]": "Average IOPS",
+    "Average EP [v2]": "Average EP",
+    "Average NPROC [v2]": "Average NPROC",
+    "Average PMEM [v2]": "Average PMEM",
+    "Average VMEM [v2]": "Average VMEM",
+    "Threshold [v2]": "Threshold",
+    "noVersionsEnabled": "Cannot create an application. No {{interpreter}} version is available. Please contact your hoster.",
+    "collectDataError": "Collecting this information was failed. Error report has been sent to developers and will be fixed soon",
+    "moduleSaved": "Module {{extension}} saved",
+    "moduleDefaultSaved": "Module set saved",
+    "optionSaved": "Option {{option}} successfully saved",
+    "readonly": "Read only",
+    "passengerLogFileDescription": "You can define the path along with the filename (e.g. {userHomeDir}logs/passenger.log)",
+    "RESOURCE_USAGE": {
+        "cpu_limited": "CPU resources limit was reached for your site",
+        "vmem_limited": "Virtual memory resources limit was reached for your site",
+        "pmem_limited": "Physical memory resources limit was reached for your site",
+        "ep_limited": "You have reached the entry processes (the number of simultaneously running php and cgi scripts, as well as cron jobs and shell sessions) limit {{faults}} times",
+        "nproc_limited": "You have reached the processes number limit {{faults}} times",
+        "io_limited": "I/O usage resources limit was reached for your site",
+        "iops_limited": "I/O operations per second limit was reached for your site",
+        "cpu_soon_limited": "Your CPU usage was at {{usage}} out of {{limit}}",
+        "vmem_soon_limited": "Your Virtual Memory usage was at {{usage}} out of {{limit}}",
+        "pmem_soon_limited": "Your Physical Memory usage was at {{usage}} out of {{limit}}",
+        "ep_soon_limited": "You had {{usage}} entry processes (number of simultaneously running php and cgi scripts, as well as cron jobs and shell sessions) out of {{limit}} max entry processes allowed",
+        "nproc_soon_limited": "You had {{usage}} processes out of {{limit}} max processes allowed",
+        "io_soon_limited": "You had {{usage}} I/O usage out of {{limit}} max I/O usage allowed",
+        "iops_soon_limited": "You had {{usage}} I/O operations per second out of {{limit}} max I/O operations per second allowed"
+    },
+    "Selected_items_range": "{start}-{end} / {total} item(s)",
+    "Selected_items": "Selected: {selected} / {total} item(s)",
+    "Select_all_items": "Select all {total} item(s)",
+    "All pages": "All",
+    "ChangeDomainPHPVersionConfirmationAdmin": "PHP version will be changed to the system default for selected domain in MultiPHP Manager (PHP-FPM will be disabled). User's website will use the version set in CloudLinux PHP Selector ({{version}}).",
+    "ChangeDomainPHPVersionConfirmationUser": "PHP version will be changed to the system default for selected domain in MultiPHP Manager. User's website will use the version set in CloudLinux PHP Selector ({{version}}).",
+    "ChangeDomainPHPVersionConfirmationAdminGroup": "PHP version will be changed to the system default for selected domains in MultiPHP Manager (PHP-FPM will be disabled). Users' websites will use the version set in CloudLinux PHP Selector.",
+    "ChangeDomainPHPVersionConfirmationUserGroup": "PHP version will be changed to the system default for selected domains in MultiPHP Manager. Users' websites will use the version set in CloudLinux PHP Selector ({{version}}).",
+    "DomainWarning": {
+        "phpFpmEnabled": "Ask the hoster to switch off PHP-FPM for domains and set current version to system version",
+        "nativeVersion": "Select any other version than native for using all functionality of CL PHP Selector",
+        "nativeUserVersion": "User should select any other version than native for using all functionality of CL PHP Selector",
+        "useMultiPHP": "Choose not system PHP version in MultiPHP Manager",
+        "eaVersionRequired": "ea-php version is required to be selected in cPanel MultiPHP Manager for PHP Selector to operate",
+        "cageFsNotInitialized": "PHP Selector cannot be activated for this domain. Initialize CageFS in the Options tab first",
+        "cageFsDisabled": "PHP Selector cannot be activated for this domain. Enable CageFS in the Options tab first",
+        "userNotInCageFs": "PHP Selector cannot be activated for this domain. Enable CageFS for this user in the Users tab first",
+        "eaVersionUnavailable": "Default ea-php version should be enabled by admin in Feature manager. Or you can try to set inherited version for domain in Cpanel PHP Manager",
+        "phpHasErrors": "Some PHP related issues need to be resolved in order to enable domain management. Find the list of PHP related issues that prevent domain management above."
+    },
+    "cldiagInProgressMessage": "Checking server for common PHP related issues...",
+    "showInstallErrorLog": "|See the log| for the details.",
+    "WMT" : {
+        "noEmailWarning": "An email was not set.",
+        "systemEmailUsed": "The system administrator's email {defaultEmail} will be used.",
+        "settings": {
+            "emailToReport": "Email to send daily report",
+            "switchWebsiteMonitoring": {
+                "title": "Website monitoring",
+                "description": "Monitoring of all websites by response status."
+            },
+            "summaryNotification": {
+                "title": "Enable summary notifications",
+                "description": "The report is sent once a day."
+            },
+            "alertNotification": {
+                "title": "Enable alert notifications",
+                "description": "The report is sent when a site is not responsive or has some issues."
+            },
+            "domainsAndUrlsIgnoreList": {
+                "title": "Domains and URLs Ignore List",
+                "description": "Specify a comma-separated list of URLs or domains that should be excluded from the daily report. Wildcards are also supported (for example: *.staging.com – this will ignore all subdomains of staging.com)."
+            },
+            "topWebsitesToShow": {
+                "title": "Top N slow websites to show",
+                "description": "Set the number of top slow websites to show in the “Main“ report."
+            },
+            "checkInterval": {
+                "title": "Check every X minutes",
+                "description": "Set the interval in minutes for the requests sending to the same domain."
+            },
+            "allowedTimeForResponse": {
+                "title": "Time allowed for response",
+                "description": "Set the domain response timeout in seconds."
+            },
+            "concurrentRequestsLimit": {
+                "title": "Concurrent requests limit",
+                "description": "Set the number of concurrent requests."
+            }
+        }
+    },
+    "SSA" : {
+        "settings": {
+            "switchPHPSitesAnalyzer": {
+                "title": "PHP Sites Analyzer",
+                "description": "Detailed analyzer for PHP websites."
+            },
+            "summaryNotifications": {
+                "title": "Enable summary notifications",
+                "description": "The report is sent once a day."
+            },
+            "topSlowWebsites": {
+                "title": "Top N slow websites to show",
+                "description": "Set the number of top slow websites to show in the “PHP Sites Analyzer“ report."
+            },
+            "topSlowUrls": {
+                "title": "Top slow URLs",
+                "description": "Set the number of the top slow URLs to be included in the “PHP Sites Analyzer“ report."
+            },
+            "slowRequestDuration": {
+                "title": "Slow request duration",
+                "description": "Set the duration in seconds to mark request as a slow one."
+            },
+            "slowRequestsNumber": {
+                "title": "Slow requests number",
+                "description": "Number of slow requests in the period of time to mark the URL as a slow one."
+            },
+            "analysisTime": {
+                "title": "Analysis time",
+                "description": "Set the period of time in hours required to analyze slow requests."
+            },
+            "slowRequestsDensityThresholdEnable": {
+                "title": "Enable slow requests density threshold",
+                "description": "Turn on/off slow requests density threshold"
+            },
+            "slowRequestsDensityThreshold": {
+                "title": "Slow requests density threshold",
+                "description": "Set the threshold value for request density in the range [0, 1]; the default is 0.8. This parameter helps filter slow requests, keeping only those that occur most frequently and have the greatest impact on website performance. The lower the value, the report will include more requests, including rare ones. The higher the value, the filtering will be stricter, keeping only the most frequent requests, as they are the most important for optimization."
+            },
+            "domainsAndUrlsIgnoreList": {
+                "title": "Domains and URLs Ignore List",
+                "description": "Specify a comma-separated list of URLs or domains that should be excluded from the daily report. Wildcards are also supported (for example: *.staging.com – this will ignore all subdomains of staging.com)."
+            }
+        }
+    },
+    "VALIDATORS" : {
+        "requiredField": "Mandatory field.",
+        "invalidEmail": "Email is not valid.",
+        "invalidStringLength": "The length should be in range {min}-{max}."
+    },
+    "TAB_DESCRIPTION": {
+        "wmt": {
+            "title": "What is website monitoring?",
+            "description": "Website monitoring tool is a report with the statistics of the domains' availability and responsiveness, as well as errors that occur when accessing these domains."
+        },
+        "ssa": {
+            "title": "What is PHP Slow Site analyzer",
+            "description": "Slow Site analyzer tracks all PHP-based requests and selects slow ones by certain rules."
+        },
+        "xray": {
+            "title": "What is X-Ray?",
+            "description": "X-Ray gathers and visualizes information about slowest system functions, external requests, software modules, and database queries of the client’s website. This information can help you to analyze website performance issues.</br><b>If AccelerateWP is installed, X-Ray Smart Advice will generate suggestions for performance improvements, allowing clients to activate features that help resolve them.</b>"
+        }
+    },
+    "AWP": {
+        "settingsDescription": "Select modules that will be available for enabling on websites",
+        "awpPremiumFeatureTitle": "AccelerateWP",
+        "awpFeatureModalTitle": "Feature",
+        "awpFeatureTooltip": "Feature enable",
+        "awpFeatureModalNote": "While no SmartAdvice has been generated for this website, you may enable these features manually as they are likely to improve performance.",
+        "awpFeaturePendingNote": "Your payment was successful. The premium features you enabled will be applied to your WordPress website in several minutes. To check if features were applied, please refresh the page. You can close this window.",
+        "accelerateWpFeatureTitle": "AccelerateWP",
+        "objectCacheModuleDescription": "Stores website database query results that have been loaded. It serves them up faster the next time they’re requested so the database doesn’t have to be queried again",
+        "siteOptimizationModuleDescription": "Page сaching and cache preloading, browser caching, lazy loading, CSS/JS optimization and more",
+        "cacheDBStatusTooltip": "Object Cache database status. Online if at least one domain is using Object Cache",
+        "cacheMemoryUsageTooltip": "Memory usage by the Object Cache database at the current moment",
+        "maxCacheMemoryLimitTooltip": "The Changeable Memory limit for the Object Cache database",
+        "misconfigurationTooltip": "Misconfigurations between your website and this module",
+        "incompatibilityTooltip": "The website is incompatible with this module",
+        "errorLogTooltip": "The error occurs while managing the module for this website",
+        "maxLimitDescription": "Specify max memory size in megabytes for Object Cache database",
+        "maxLimitRecommended": "It is recommended to set the value to more than 64mb to avoid issues",
+        "noWebsites": "No WordPress websites",
+        "noUsers": "No users.",
+        "objectCacheUsersCount": "{{uses}} of {{total}} users",
+        "siteOptimizationUsersCount": "{{uses}} of {{total}} users",
+        "showUserIconTitle": "Enable AccelerateWP for all users",
+        "showUserIconTitleSolo": "Enable AccelerateWP and SmartAdvice alerts",
+        "showUserIconDescription": "Show or hide the AccelerateWP plugin icon in the еnd-user interface",
+        "showAllWebsites": "Show all {count} websites",
+        "hideWebsites": "Hide websites",
+        "premiumModuleDescription": "This is a premium module and is available free of charge during the Beta contract period",
+        "freeModuleDescription": "Using this module is unlimited. End-users have the ability to enable this module for an unlimited number of users",
+        "activateObjectCacheAllTitle": "Allow Object Cache for all users",
+        "activateOptimizationAllTitle": "Allow Site Optimization for all users",
+        "awpSwitchIconModalTitle": {
+            "enable": "Do you want to enable AccelerateWP for all users?",
+            "disable": "Do you want to disable AccelerateWP for all users?",
+            "reEnable": "Do you want to re-enable AccelerateWP for all users?"
+        },
+        "awpSwitchIconModalDescription": {
+            "autoTracingDisabled": "PHP X-Ray with auto-tracing will be enabled as dependency for AccelerateWP. X-Ray auto-tracing automatically runs tracing tasks at the end of each day for slow URLs that were found by the Slow Site Analyzer. Please be aware that this can increase server load.",
+            "enable": "When this feature is enabled, the AccelerateWP page appears for all users. When performance improvements are available for WordPress websites, users will be advised to automatically enable/install those improvements.",
+            "disable": "When this feature is disabled, all AccelerateWP performance enhancing functionality installed or in use by all users on this server will cease to function (including Premium)",
+            "reEnable": "Re-enabling is highly recommended since AccelerateWP was updated.<br> IMPORTANT: Switching this toggle will now enable AccelerateWP for all users on the server and will be visible in the cPanel UI for all users. If you still wish to restrict usage/tests to specific users, you can do so via the command line interface.",
+            "enablingDuration": "Enabling AccelerateWP can take up to 3 seconds for every 100 users processed",
+            "unsupportedThrottlingWarning" : "AccelerateWP SmartAdvice may be inaccurate due to an outdated kernel on this server. Please update the kernel as soon as possible.",
+            "uninstalledXrayWarning" : "SmartAdvice will not be generated since PHP X-Ray is not installed. Please install PHP X-Ray as soon as possible.",
+            "productOptions" : "Your product options",
+            "premiumFeatures" : "Premium Features",
+            "whenPremiumEnabled" : "When AccelerateWP premium features are enabled, your users will (when applicable) be given SmartAdvice to install highly valuable performance tools. License usage is billed per user.",
+            "phpXrayRequired" : "PHP X-Ray is required to enable SmartAdvice"
+        },
+        "awpManagePremiumModalTitle": {
+            "active_true": "Manage",
+            "active_false": "Activate premium features"
+        },
+        "awpManagePremiumModalBtn": {
+            "active_true": "Save",
+            "active_false": "Turn on"
+        },
+        "configurePremium": {
+            "activate": "Activate premium features",
+            "manage": "Manage",
+            "billing": "$$ - Usage is billed per user per month"
+        },
+        "leaveFeedbackTitle": "Please leave your feedback about AccelerateWP and Smart Advice",
+        "leaveFeedbackLinkText": "Leave a feedback",
+        "usersAllowedToUseModule": "Users allowed to use module",
+        "usersThatUseModule": "Users that use module",
+        "sitesWithEnabledModule": "WordPress sites with enabled module",
+        "migrationRequiredMessage": {
+            "title": "Re-enabling is highly recommended since AccelerateWP was updated.",
+            "description": "IMPORTANT: Switching this toggle will now enable AccelerateWP for all users on the server and will be visible in the cPanel UI for all users. If you still wish to restrict usage/tests to specific users, you can still do so via the command line interface."
+        },
+        "adviceAvailable": "Advice available",
+        "noAdvice": "No advice",
+        "activeAdvice": "Active",
+        "sharedEditionWarningTitle": "AccelerateWP is not available with your current CloudLinux OS license.",
+        "warningReadOnlyMode": "Advice can only be accepted and installed in the end user interface",
+        "sharedEditionWarningDescription": "This feature is not supported with your current CloudLinux license (CloudLinux OS Legacy). Please contact your CloudLinux license provider to upgrade.",
+        "noAllowedFeatures": {
+            "requestAccess": "Request Access",
+            "description": "AccelerateWP helps to solve performance issues of your website. It includes Optimization features that can be activated for WordPress sites easily.",
+            "linkText": "Here is the link to the guide.",
+            "contactSupport" : "AccelerateWP is currently disabled, you'll need to contact support for more info."
+        },
+        "rollbackConfirmation": {
+            "title": "Please specify the reason",
+            "inputLabel": "Please tell us why enabling this advice did not work out for you: <i>– optional</i>",
+            "placeholder": "Start typing here..."
+        },
+        "premiumAvailableBadge": {
+            "title": "premium available",
+            "tooltip": "Premium subscription active"
+        },
+        "billing": {
+            "upgradeSubscription" : "Upgrade subscription",
+            "upgradeYourSubscription" : "Upgrade your subscription",
+            "askAdminForUpgrade": "To continue you need to have a subscription. <br>Please contact your administrator to upgrade the subscription."
+        },
+        "module_accelerate_wp": {
+            "name": "AccelerateWP",
+            "shortDescription": "Page сaching and cache preloading, browser caching, lazy loading, CSS/JS optimization and more"
+        },
+        "module_object_cache": {
+            "name": "Object cache",
+            "shortDescription": "Stores database query results in additional storage for quick access."
+        },
+        "awpPremiumTooltip": "AccelerateWP premium advice",
+        "switchAwpIconToggleTooltip": "Disable AccelerateWP and hide the AccelerateWP page for all users",
+        "activateWizard": {
+            "title": "AccelerateWP is not activated for users on this server",
+            "description": "Your CloudLinux OS Shared Pro license now includes AccelerateWP for unlimited users.",
+            "forThisServer": "Activate for this server",
+            "forAllServers": "Activate on all servers",
+            "willRedirectToCLN": "You will be redirected to the CLN to activate"
+        }
+    },
+    "AUTOTRACING": {
+        "enableTitle": "Enable Autotracing",
+        "shortDescription": "Mechanism that automatically creates PHP X-Ray tracing tasks per day for slow URLs that were found during a day by PHP Site Analyzer. It can provide a more detailed report of existing issues on the site. <a href='https://docs.cloudlinux.com/cloudlinux-os-plus/#x-ray-autotracing' target='_blank'>See details</a>."
+    },
+    "SMART_ADVICE": {
+        "ACTION_OBJECT_CACHE": "Turn on caching",
+        "ACTION_SITE_OPTIMIZATION": "Turn on AccelerateWP",
+        "rollbackTitle": "The advice was not applied",
+        "waitOperationFinishTooltip": "Please wait until previous operation finish",
+        "applyAdvice": "Apply advice",
+        "upgradeToApplyAdvice": "Upgrade to apply"
+    },
+    "LINKING_TO_CLN": {
+        "successfullyLinked": "Server successfully linked to CLN",
+        "linkNowTitle": "Link your server to CLN now",
+        "linkNowDescription": "You can link all your servers to a shared group to monitor the load of servers and users in Centralized Monitoring via <a href=\"https://cm.cloudlinux.com/\" target=\"_blank\">https://cm.cloudlinux.com/</a>. You can also use PHP X-Ray, AccelerateWP, Smart Advice and all Shared PRO functionality. Please find more details <a href=\"https://docs.cloudlinux.com/cloudlinux-os-plus\" target=\"_blank\">here</a>",
+        "linkNowHint": "*To link your servers you need a CLN account. If you don't have please create it <a href=\"https://cln.cloudlinux.com/console/register/customer\" target=\"_blank\">here</a>.",
+        "linkServer": "Link server"
+    },
+    "INSTALLATION": {
+        "everythingReadyTitle": "Everything is ready to install the product.",
+        "detailsBelowTitle": "The installation details are provided below",
+        "installingButton": "Installing...",
+        "stoppedButton": "Stopped",
+        "retryButton": "Retry",
+        "cancelWarning": "The installation was cancelled. You can restart installation clicking 'Retry' button or you can install manually via <a href=\"https://docs.cloudlinux.com/cloudlinux_installation/#converting-existing-servers\" target=\"_blank\">CLI</a>. The activation key was sent to your email.",
+        "installingApproximateTime": "It normally might take from 10 minutes to 1 hour",
+        "footerWarningHead": "Fix the issues shown and use the",
+        "footerWarningTail": "button to restart the installation.",
+        "footerWarningSecond": "If it fails, please contact our Support button to restart the installation.",
+        "slideWizard": {
+            "title": "Wizard",
+            "description": "CloudLinux OS Installation Wizard helps you to easily install and set up CloudLinux OS components on your server with cPanel, Plesk or DirectAdmin."
+        },
+        "slideDashboard": {
+            "title": "Dashboard",
+            "description": "CloudLinux Dashboard provides a quick overview of statistics and all administrative information for server administrators. From Dashboard you can quickly get information about End Users and Resellers hitting limits."
+        },
+        "slideCurrent": {
+            "title": "Current usage",
+            "description": "The Current usage tab provides the information on the usage of Speed, memory, IO, IOPS, Number of Processes, and Entry Processes for all users."
+        },
+        "slideStatistics": {
+            "title": "Statistics",
+            "description": "The Statistics tab shows end users, resellers and resellers’ end users limits usage statistics."
+        },
+        "slideOptions": {
+            "title": "Options",
+            "description": "The Options tab allows you to manage all the features and settings shipped within CloudLinux Manager."
+        },
+        "slidePackages": {
+            "title": "Packages",
+            "description": "The Packages tab allows setting the limits for as many users as you need by editing packages of proper limits."
+        },
+        "slideSelector": {
+            "title": "Selector",
+            "description": "The Selector Selector allows administrators to manage PHP versions for users and allows end-users to select the specific version of PHP they need. It allows ultimate flexibility by offering all popular versions of PHP, with more than 120 PHP extensions to choose from."
+        },
+        "slideWmt": {
+            "title": "Website monitoring",
+            "description": "Website monitoring enables sysadmins to monitor all their servers, determine the load on each one, and identify the users creating the most load. If a domain is using an inordinate amount of CPU, memory, or disk resources, this tool helps bring it under control."
+        },
+        "slideXray": {
+            "title": "X-Ray",
+            "description": "PHP X-Ray provides detailed information on performance bottlenecks that involve the CMS. If a site has sluggish plugins, database queries, functions, or external calls, this new tool helps pinpoint the underlying problem.\nIdentifies slow database queries\nDetects slow WP plugins and suboptimal code \nPrevents irrational usage of external requests"
+        },
+        "slideUserResourceUsage": {
+            "label": "End-user Plugins",
+            "title": "Resource usage",
+            "description": "Client Resource Usage plugin for cPanel, Plesk, and DirectAdmin allows host’s end users to view and monitor resource usage."
+        },
+        "slideUserPHPSelector": {
+            "label": "End-user Plugins",
+            "title": "PHP Selector",
+            "description": "PHP Selector allows end-users to select the specific version of PHP they need. It allows ultimate flexibility by offering all popular versions of PHP, with more than 120 PHP extensions to choose from."
+        },
+        "notInstalled": "The license is not installed",
+        "buyLicense": "Buy a license",
+        "goToManager": "Go to Cloudlinux Manager",
+        "completeTitle": "Thank you for installing CloudLinux OS!",
+        "completeDescription": "Please <b>reboot your system</b> to update the kernel.<br>If this message is displayed after the reboot, please contact support via <a target='_blank' href='https://www.cloudlinux.com/support-portal'>Support Portal</a>",
+        "installedDescription": "Now you can use all functionality provided by CloudLinux OS. Click the button below and go to the Cloudlinux Manager plugin. If you have any question, please contact support via <a target='_blank' href='https://www.cloudlinux.com/support-portal'>Support Portal</a>",
+        "installedNoManager": "To use all functionality provided by CloudLinux OS, please follow the instruction from the <a target='_blank' rel='noopener noreferrer' href='https://docs.cloudlinux.com/lve_manager'>documentation</a> and install the CloudLinux Manager plugin",
+        "managerWillBeInstalled": "The \"CloudLinux Manager\" extension will be installed. Use this extension to manage all features provided by CloudLinux OS. <a target='_blank' rel='noopener noreferrer' href='https://docs.cloudlinux.com/lve_manager'>More details.</a>",
+        "unsupportedTitle": "Unfortunately, plugin doesn’t support your OS",
+        "unsupportedDescription": "Please read more about operation system that we support",
+        "unsupportedLinkText": "Learn more"
+    },
+    "DARK_MODE": {
+        "switchDarkMode": "Switch dark mode",
+        "darkModeInherited": "Dark mode is inherited and cannot be changed"
+    },
+    "LIMIT_TOOLTIP": {
+        "SPEED": "Limits CPU usage relative to a single core or in Hz. Ensures fair CPU distribution among users.",
+        "PMEM": "Sets the maximum amount of physical memory (RAM) a user can use, including shared memory and disk cache.",
+        "VMEM": "Limits the total virtual memory (VIRT in top) processes can allocate within LVE (Lightweight Virtual Environment). Note: It is recommended to disable VMEM limits (set them to 0) in your system at all because they are deprecated in CloudLinux OS 6 and 7 system and can cause unexpected issues.",
+        "IO": "Defines the maximum disk input/output (I/O) speed for a user, combining both read and write operations.",
+        "IOPS": "Limits the number of read/write operations per second to prevent excessive disk load.",
+        "EP": "Controls the number of concurrent entry processes, affecting web connections (Apache, Nginx), SSH, and cron jobs.",
+        "NPROC": "Defines the maximum number of processes a user can run simultaneously within their LVE (Lightweight Virtual Environment).",
+        "INODES": "Restricts the total number of files and directories a user can create, controlling file system usage."
+    },
+    "UI": {
+        "buyAdmin": "Buy CloudLinux OS Admin",
+        "buySharedPro": "Buy CloudLinux OS Shared Pro",
+        "goToLicense": "Go to License",
+        "learnMore": "Learn more"
+    },
+    "SITE_ISOLATION": {
+        "statusChanged": "Site Isolation status changed!",
+        "settingsSaved": "Site Isolation settings saved!",
+        "domainStatusChanged": "Domain isolation status changed!",
+        "isolationEnabled": "Isolation enabled!",
+        "isolationDisabled": "Isolation disabled!",
+        "domainResetToDefaults": "Domain reset to account defaults!",
+        "nonClDomainsWarning": "{{count}} domain(s) don't use CloudLinux PHP Selector — isolation will not be effective until they are switched: {{domains}}",
+        "infoBannerWithIsolation": "Domains grouped by user. Expand a user to see all their domains, isolation status, and PHP configuration.",
+        "infoBannerWithoutIsolation": "Domains grouped by user. Expand a user to see all their domains and PHP configuration.",
+        "optionsInfoBanner": "Site Isolation allows individual websites to run in isolated CageFS environments with their own PHP configuration. Enable this feature per-user to allow them to isolate their domains.",
+        "Allowed": "Allowed",
+        "Denied": "Denied",
+        "Isolated": "Isolated",
+        "Not Isolated": "Not Isolated",
+        "Enabled": "Enabled",
+        "Disabled": "Disabled",
+        "PER-DOMAIN": "PER-DOMAIN",
+        "ACCOUNT GLOBAL": "ACCOUNT GLOBAL",
+        "Switch to PHP Selector": "Switch to PHP Selector",
+        "Switch to MultiPHP": "Switch to MultiPHP",
+        "Search by user or domain...": "Search by user or domain...",
+        "Expand user": "Expand user {{username}}"
+    }
+}
